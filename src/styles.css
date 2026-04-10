@@ -1,7 +1,7 @@
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #223047;
-  background: radial-gradient(circle at 5% 5%, #e7edf7 0%, #eef3f8 35%, #f5f7fb 70%, #fafbfe 100%);
+  color: #1f3a2c;
+  background: radial-gradient(circle at 6% 6%, #e2f5ea 0%, #eaf8ef 38%, #f1faf4 72%, #f8fcf9 100%);
 }
 
 * {
@@ -31,27 +31,27 @@ body {
 h1 {
   margin: 6px 0 0;
   font-size: 1.65rem;
-  color: #1f2857;
+  color: #0f5132;
 }
 
 .notification-button {
-  border: 1px solid rgba(103, 126, 153, 0.28);
-  background: linear-gradient(125deg, #ffffff 0%, #eef3f8 100%);
+  border: 1px solid rgba(63, 124, 94, 0.26);
+  background: linear-gradient(125deg, #ffffff 0%, #e7f6ee 100%);
   border-radius: 12px;
   padding: 10px 14px;
-  color: #334b67;
+  color: #20503b;
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 8px 20px rgba(74, 96, 125, 0.14);
+  box-shadow: 0 8px 20px rgba(59, 107, 83, 0.16);
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
 .notification-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(74, 96, 125, 0.2);
+  box-shadow: 0 12px 24px rgba(59, 107, 83, 0.24);
 }
 
 .notification-icon {
@@ -64,39 +64,44 @@ h1 {
   border-radius: 999px;
   display: inline-grid;
   place-items: center;
-  background: linear-gradient(125deg, #c97373 0%, #bb8f7e 100%);
+  background: linear-gradient(125deg, #1f8f5f 0%, #43a772 100%);
   color: #fff;
   font-size: 0.76rem;
   padding: 0 6px;
 }
 
 .notification-panel {
+  position: absolute;
+  top: 74px;
+  right: 20px;
+  z-index: 20;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: min(100%, 460px);
-  margin-left: auto;
-  margin-bottom: 14px;
+  gap: 8px;
+  width: min(100%, 360px);
+  max-height: min(52vh, 320px);
+  overflow-y: auto;
+  padding-right: 2px;
 }
 
 .notification-item {
-  background: linear-gradient(160deg, #ffffff 0%, #f6f8fb 100%);
-  border-radius: 14px;
-  padding: 12px;
-  border: 1px solid #d7e0ea;
-  box-shadow: 0 8px 16px rgba(75, 93, 118, 0.08);
+  background: linear-gradient(160deg, #ffffff 0%, #f2f9f5 100%);
+  border-radius: 12px;
+  padding: 10px 11px;
+  border: 1px solid #cde4d7;
+  box-shadow: 0 6px 14px rgba(56, 101, 78, 0.1);
 }
 
 .notification-item.down {
-  border-left: 6px solid #c57a7a;
+  border-left: 4px solid #5b8f6b;
 }
 
 .notification-item.warn {
-  border-left: 6px solid #c2a06f;
+  border-left: 4px solid #86ad74;
 }
 
 .notification-item.ok {
-  border-left: 6px solid #6ea293;
+  border-left: 4px solid #2e9d68;
 }
 
 .notification-row {
@@ -107,7 +112,7 @@ h1 {
 
 .notification-row h3 {
   margin: 0;
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -118,14 +123,15 @@ h1 {
 }
 
 .notification-row span {
-  color: #6b76b2;
-  font-size: 0.72rem;
+  color: #52735f;
+  font-size: 0.68rem;
 }
 
 .notification-item p {
-  margin: 8px 0 0;
-  color: #4d588e;
-  font-size: 0.8rem;
+  margin: 6px 0 0;
+  color: #3f5e4d;
+  font-size: 0.74rem;
+  line-height: 1.35;
 }
 
 .metrics-grid {
@@ -160,7 +166,7 @@ h1 {
   font-size: 0.78rem;
   font-weight: 700;
   text-transform: uppercase;
-  color: #6b76b2;
+  color: #4d7a61;
 }
 
 .metric-value {
@@ -172,7 +178,7 @@ h1 {
 .metric-growth {
   margin: 0;
   font-size: 0.9rem;
-  color: #6f7ab7;
+  color: #4f7c63;
 }
 
 .metric-growth.positive {
@@ -184,7 +190,7 @@ h1 {
 }
 
 .home-layout {
-  margin-top: 20px;
+  margin-top: 18px;
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
   gap: 16px;
@@ -192,18 +198,18 @@ h1 {
 
 .overview-card {
   border-radius: 16px;
-  background: linear-gradient(160deg, #ffffff 0%, #f2f6fb 55%, #edf5f3 100%);
+  background: linear-gradient(160deg, #ffffff 0%, #eff8f2 58%, #e9f6ee 100%);
   padding: 20px;
-  box-shadow: 0 14px 26px rgba(71, 94, 123, 0.14);
-  border: 1px solid #d8e2ec;
+  box-shadow: 0 14px 26px rgba(62, 109, 86, 0.14);
+  border: 1px solid #d2e7da;
 }
 
 .side-insights {
   border-radius: 16px;
-  background: linear-gradient(170deg, #ffffff 0%, #f3f6fb 100%);
+  background: linear-gradient(170deg, #ffffff 0%, #eef8f2 100%);
   padding: 20px;
-  border: 1px solid #d8e2ec;
-  box-shadow: 0 14px 24px rgba(71, 94, 123, 0.1);
+  border: 1px solid #d2e7da;
+  box-shadow: 0 14px 24px rgba(62, 109, 86, 0.12);
 }
 
 .side-insights h3 {
@@ -213,7 +219,7 @@ h1 {
 .side-insights ul {
   margin: 12px 0 0;
   padding-left: 18px;
-  color: #46518a;
+  color: #315643;
   display: grid;
   gap: 8px;
 }
@@ -234,33 +240,33 @@ h1 {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  border: 1px solid #cbd5ff;
-  background: linear-gradient(125deg, #ffffff 0%, #eef2ff 100%);
-  color: #4554a5;
+  border: 1px solid #c7e2d4;
+  background: linear-gradient(125deg, #ffffff 0%, #e8f6ee 100%);
+  color: #236143;
   font-size: 1.3rem;
   cursor: pointer;
 }
 
 .carousel-arrow:hover {
-  background: #e9eeff;
+  background: #ddf1e4;
 }
 
 .overview-label {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: #6975b7;
+  color: #4e7e63;
   font-size: 0.75rem;
 }
 
 h2 {
   margin: 6px 0 0;
-  color: #1f2857;
+  color: #145a39;
 }
 
 .overview-subtitle {
   margin: 8px 0 0;
-  color: #5965a5;
+  color: #456b57;
   font-size: 0.87rem;
 }
 
@@ -273,20 +279,20 @@ h2 {
   min-height: 360px;
   display: grid;
   place-items: center;
-  color: #5f6cb0;
+  color: #4f7f65;
 }
 
 .details-page {
-  background: linear-gradient(165deg, #ffffff 0%, #f4f5ff 55%, #f3f9ff 100%);
+  background: linear-gradient(165deg, #ffffff 0%, #edf8f1 58%, #edf9f2 100%);
   border-radius: 18px;
   padding: 18px;
-  border: 1px solid #dbe2ff;
+  border: 1px solid #d3e8dc;
 }
 
 .back-button {
-  border: 1px solid #c5cfff;
-  color: #33407a;
-  background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
+  border: 1px solid #c7e2d4;
+  color: #275d43;
+  background: linear-gradient(135deg, #ffffff 0%, #e9f7ef 100%);
   border-radius: 12px;
   padding: 10px 14px;
   cursor: pointer;
@@ -294,13 +300,13 @@ h2 {
   display: inline-flex;
   gap: 8px;
   align-items: center;
-  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.16);
+  box-shadow: 0 8px 18px rgba(56, 112, 84, 0.16);
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
 .back-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 20px rgba(79, 70, 229, 0.24);
+  box-shadow: 0 12px 20px rgba(56, 112, 84, 0.24);
 }
 
 .details-layout {
@@ -311,9 +317,9 @@ h2 {
 }
 
 .details-sidebar {
-  background: linear-gradient(170deg, #ffffff 0%, #f2f5ff 100%);
+  background: linear-gradient(170deg, #ffffff 0%, #edf8f2 100%);
   border-radius: 14px;
-  border: 1px solid #dbe2ff;
+  border: 1px solid #d3e8dc;
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -324,7 +330,7 @@ h2 {
   border: 1px solid transparent;
   border-radius: 10px;
   background: #ffffff;
-  color: #5362a5;
+  color: #3e6a53;
   padding: 10px;
   text-align: left;
   font-weight: 700;
@@ -332,9 +338,9 @@ h2 {
 }
 
 .sidebar-item.active {
-  border-color: #818cf8;
-  color: #2e3a7f;
-  background: #e9ecff;
+  border-color: #4ba676;
+  color: #174c32;
+  background: #e2f3e9;
 }
 
 .details-content {
@@ -351,17 +357,17 @@ h2 {
 
 .details-card {
   border-radius: 12px;
-  border: 1px solid #dbe2ff;
+  border: 1px solid #d3e8dc;
   background: #ffffff;
-  color: #3e4b89;
+  color: #2f5e45;
   text-align: left;
   padding: 12px;
   cursor: pointer;
 }
 
 .details-card.active {
-  border-color: #818cf8;
-  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.16);
+  border-color: #4ba676;
+  box-shadow: 0 8px 18px rgba(56, 112, 84, 0.16);
 }
 
 .details-card h3 {
@@ -371,7 +377,7 @@ h2 {
 
 .details-card p {
   margin: 4px 0 0;
-  color: #6270b2;
+  color: #4b755d;
   font-size: 0.84rem;
 }
 
@@ -382,9 +388,9 @@ h2 {
 }
 
 .kpi-pill {
-  border: 1px solid #dbe2ff;
+  border: 1px solid #d3e8dc;
   border-radius: 12px;
-  background: linear-gradient(120deg, #ffffff 0%, #f4f6ff 100%);
+  background: linear-gradient(120deg, #ffffff 0%, #edf8f1 100%);
   padding: 10px 12px;
 }
 
@@ -393,14 +399,14 @@ h2 {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #7482bf;
+  color: #5a846c;
 }
 
 .kpi-pill strong {
   display: block;
   margin-top: 4px;
   font-size: 1.05rem;
-  color: #2f3d7f;
+  color: #1f583c;
 }
 
 .kpi-up {
@@ -462,7 +468,7 @@ h2 {
   }
 
   .notification-panel {
-    top: 92px;
+    top: 86px;
     right: 14px;
     left: 14px;
     width: auto;
