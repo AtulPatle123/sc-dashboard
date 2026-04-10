@@ -73,18 +73,16 @@ h1 {
 .notification-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  width: min(100%, 360px);
-  position: absolute;
-  top: 78px;
-  right: 20px;
-  z-index: 20;
+  gap: 10px;
+  width: min(100%, 460px);
+  margin-left: auto;
+  margin-bottom: 14px;
 }
 
 .notification-item {
   background: linear-gradient(160deg, #ffffff 0%, #f6f8fb 100%);
   border-radius: 14px;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid #d7e0ea;
   box-shadow: 0 8px 16px rgba(75, 93, 118, 0.08);
 }
