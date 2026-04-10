@@ -1,7 +1,7 @@
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #e2e8f0;
-  background: linear-gradient(135deg, #0f172a, #1e293b 38%, #312e81);
+  background: linear-gradient(135deg, #16a34a, #15803d 35%, #065f46);
 }
 
 * {
@@ -13,13 +13,9 @@ body {
   min-height: 100vh;
 }
 
-button {
-  font-family: inherit;
-}
-
 .app-shell {
   max-width: 1200px;
-  margin: 30px auto;
+  margin: 28px auto;
   padding: 20px;
 }
 
@@ -32,28 +28,29 @@ button {
 .metric-card {
   border: none;
   padding: 18px;
-  border-radius: 16px;
-  background: linear-gradient(160deg, #f8fafc, #e2e8f0);
+  border-radius: 14px;
+  background: rgba(248, 250, 252, 0.95);
   color: #0f172a;
   text-align: left;
   cursor: pointer;
-  transition: transform 240ms ease, box-shadow 240ms ease;
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.2);
+  transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
   border-top: 4px solid transparent;
 }
 
 .metric-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
 .metric-card.active {
   border-top-color: var(--accent);
-  box-shadow: 0 18px 38px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 20px 40px rgba(6, 78, 59, 0.22);
+  background: #ffffff;
 }
 
 .metric-title {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   color: #64748b;
@@ -61,7 +58,7 @@ button {
 
 .metric-value {
   margin: 8px 0;
-  font-size: 1.6rem;
+  font-size: 1.7rem;
   font-weight: 700;
 }
 
@@ -81,24 +78,23 @@ button {
 
 .overview-card {
   margin-top: 20px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, #111827, #1f2937 45%, #312e81);
+  border-radius: 16px;
+  background: radial-gradient(circle at top, #166534, #064e3b 55%);
   padding: 20px;
-  box-shadow: 0 26px 55px rgba(15, 23, 42, 0.45);
+  box-shadow: 0 24px 55px rgba(6, 78, 59, 0.42);
 }
 
 .overview-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 14px;
 }
 
 .overview-label {
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #c4b5fd;
+  letter-spacing: 0.07em;
+  color: #a7f3d0;
   font-size: 0.75rem;
 }
 
@@ -109,30 +105,8 @@ h2 {
 
 .overview-subtitle {
   margin: 8px 0 0;
-  color: #cbd5e1;
+  color: #d1fae5;
   font-size: 0.87rem;
-}
-
-.carousel-controls {
-  display: flex;
-  gap: 10px;
-}
-
-.carousel-controls button {
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-  color: #ffffff;
-  cursor: pointer;
-  font-size: 1.4rem;
-  transition: background 180ms ease, transform 180ms ease;
-}
-
-.carousel-controls button:hover {
-  background: rgba(129, 140, 248, 0.6);
-  transform: scale(1.04);
 }
 
 .chart-wrap {
@@ -147,113 +121,23 @@ h2 {
   color: #cbd5e1;
 }
 
-.detail-layout {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 280px 1fr;
-  background: linear-gradient(140deg, #020617, #1e1b4b);
-}
-
-.detail-sidebar {
-  padding: 24px;
-  border-right: 1px solid rgba(148, 163, 184, 0.25);
-  background: rgba(15, 23, 42, 0.88);
-}
-
-.detail-sidebar h3 {
-  color: #f8fafc;
-  margin-top: 16px;
-  margin-bottom: 16px;
-}
-
-.back-button {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: transparent;
-  color: #f8fafc;
-  text-align: left;
-  cursor: pointer;
-}
-
-.side-nav-btn {
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 11px 12px;
-  border: none;
-  border-radius: 10px;
-  background: #1e293b;
-  color: #cbd5e1;
-  text-align: left;
-  cursor: pointer;
-}
-
-.side-nav-btn.active {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #ffffff;
-}
-
-.detail-content {
-  padding: 24px;
-}
-
-.detail-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-}
-
-.detail-card {
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  border-radius: 14px;
-  padding: 14px;
-  background: rgba(15, 23, 42, 0.7);
-  color: #e2e8f0;
-  text-align: left;
-  cursor: pointer;
-}
-
-.detail-card h4 {
-  margin: 0;
-}
-
-.detail-card p {
-  margin-top: 8px;
-  margin-bottom: 0;
-  color: #94a3b8;
-}
-
-.detail-card.active {
-  border-color: var(--card-color);
-  box-shadow: 0 0 0 1px var(--card-color);
-}
-
-.detail-graph {
-  margin-top: 18px;
-  background: #ffffff;
-  color: #0f172a;
-  border-radius: 16px;
-  padding: 16px;
-}
-
-@media (max-width: 980px) {
+@media (max-width: 960px) {
   .metrics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .detail-layout {
-    grid-template-columns: 1fr;
-  }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 600px) {
+  .app-shell {
+    margin: 0;
+    padding: 14px;
+  }
+
   .metrics-grid {
     grid-template-columns: 1fr;
   }
 
-  .overview-header {
-    flex-direction: column;
-    align-items: flex-start;
+  .metric-value {
+    font-size: 1.4rem;
   }
 }
