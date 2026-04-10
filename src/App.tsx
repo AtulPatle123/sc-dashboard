@@ -71,8 +71,8 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
       valueLabel: '350,897',
       growth: '+6.9%',
       positive: true,
-      color: '#4F46E5',
-      secondaryColor: '#06B6D4',
+      color: '#4C6FAE',
+      secondaryColor: '#7FA7D8',
       chartKind: 'area',
       chart: [
         { month: 'May', value: 120 },
@@ -91,8 +91,8 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
       valueLabel: '2,356',
       growth: '+2.1%',
       positive: true,
-      color: '#9333EA',
-      secondaryColor: '#EC4899',
+      color: '#5E7FB1',
+      secondaryColor: '#8FB0D6',
       chartKind: 'bar',
       chart: [
         { month: 'May', value: 380 },
@@ -111,8 +111,8 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
       valueLabel: '924',
       growth: '+11.0%',
       positive: true,
-      color: '#0EA5E9',
-      secondaryColor: '#14B8A6',
+      color: '#4D86A4',
+      secondaryColor: '#7DB9C4',
       chartKind: 'line',
       chart: [
         { month: 'May', value: 58 },
@@ -131,8 +131,8 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
       valueLabel: '49.65%',
       growth: '-1.4%',
       positive: false,
-      color: '#F97316',
-      secondaryColor: '#EF4444',
+      color: '#A6736A',
+      secondaryColor: '#C89A92',
       chartKind: 'line',
       chart: [
         { month: 'May', value: 44 },
@@ -248,7 +248,7 @@ const buildCompositionData = (selected: DashboardMetric | undefined, latestPoint
   return [
     { name: 'Healthy', value: healthy, color: selected.color },
     { name: 'Warning', value: warning, color: selected.secondaryColor },
-    { name: 'Critical', value: critical, color: '#F43F5E' }
+    { name: 'Critical', value: critical, color: '#C38A88' }
   ];
 };
 
@@ -425,14 +425,14 @@ export const App = () => {
                           </linearGradient>
                         </defs>
 
-                        <CartesianGrid stroke="rgba(67, 76, 120, 0.2)" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fill: '#545c8a', fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#545c8a', fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <CartesianGrid stroke="rgba(91, 112, 136, 0.2)" vertical={false} />
+                        <XAxis dataKey="month" tick={{ fill: '#5f7289', fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#5f7289', fontSize: 12 }} axisLine={false} tickLine={false} />
 
                         <Tooltip
                           contentStyle={{
                             borderRadius: 12,
-                            border: '1px solid rgba(135, 146, 214, 0.45)',
+                            border: '1px solid rgba(135, 157, 182, 0.45)',
                             backgroundColor: '#ffffff',
                             color: '#1f294f'
                           }}
@@ -458,7 +458,7 @@ export const App = () => {
                         <Line
                           type="monotone"
                           dataKey="bestFit"
-                          stroke="#10B981"
+                          stroke="#6D9F8E"
                           strokeWidth={2}
                           strokeDasharray="6 6"
                           dot={false}
@@ -567,13 +567,13 @@ export const App = () => {
                     <div className="chart-wrap">
                       <ResponsiveContainer width="100%" height={290}>
                         <ComposedChart data={selectedChart}>
-                          <CartesianGrid stroke="rgba(67, 76, 120, 0.2)" vertical={false} />
-                          <XAxis dataKey="month" tick={{ fill: '#545c8a', fontSize: 12 }} axisLine={false} tickLine={false} />
-                          <YAxis tick={{ fill: '#545c8a', fontSize: 12 }} axisLine={false} tickLine={false} />
+                          <CartesianGrid stroke="rgba(91, 112, 136, 0.2)" vertical={false} />
+                          <XAxis dataKey="month" tick={{ fill: '#5f7289', fontSize: 12 }} axisLine={false} tickLine={false} />
+                          <YAxis tick={{ fill: '#5f7289', fontSize: 12 }} axisLine={false} tickLine={false} />
                           <Tooltip
                             contentStyle={{
                               borderRadius: 12,
-                              border: '1px solid rgba(135, 146, 214, 0.45)',
+                              border: '1px solid rgba(135, 157, 182, 0.45)',
                               backgroundColor: '#ffffff',
                               color: '#1f294f'
                             }}
@@ -584,7 +584,7 @@ export const App = () => {
                           {selected?.chartKind !== 'bar' && (
                             <Area type="monotone" dataKey="value" fill={selected?.color} fillOpacity={0.18} stroke={selected?.color} strokeWidth={3} />
                           )}
-                          <Line type="monotone" dataKey="bestFit" stroke="#10B981" strokeWidth={2} strokeDasharray="6 6" dot={false} />
+                          <Line type="monotone" dataKey="bestFit" stroke="#6D9F8E" strokeWidth={2} strokeDasharray="6 6" dot={false} />
                           {latestPoint && (
                             <ReferenceDot
                               x={latestPoint.month}
@@ -615,7 +615,7 @@ export const App = () => {
                         <Tooltip
                           contentStyle={{
                             borderRadius: 12,
-                            border: '1px solid rgba(135, 146, 214, 0.45)',
+                            border: '1px solid rgba(135, 157, 182, 0.45)',
                             backgroundColor: '#ffffff',
                             color: '#1f294f'
                           }}
