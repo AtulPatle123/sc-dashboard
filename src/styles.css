@@ -17,6 +17,7 @@ body {
   max-width: 1240px;
   margin: 16px auto;
   padding: 20px;
+  position: relative;
 }
 
 .top-bar {
@@ -106,7 +107,7 @@ h1 {
 
 .notification-row h3 {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -118,13 +119,13 @@ h1 {
 
 .notification-row span {
   color: #6b76b2;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
 }
 
 .notification-item p {
   margin: 8px 0 0;
   color: #4d588e;
-  font-size: 0.87rem;
+  font-size: 0.8rem;
 }
 
 .metrics-grid {
@@ -439,9 +440,12 @@ h2 {
     grid-template-columns: 1fr;
   }
 
-  .details-cards-grid,
-  .notification-panel {
+  .details-cards-grid {
     grid-template-columns: 1fr;
+  }
+
+  .notification-panel {
+    right: 14px;
   }
 }
 
@@ -455,6 +459,13 @@ h2 {
   .overview-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .notification-panel {
+    top: 92px;
+    right: 14px;
+    left: 14px;
+    width: auto;
   }
 
   .metrics-grid {
