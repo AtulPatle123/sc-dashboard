@@ -192,9 +192,11 @@ export const App = () => {
                       <stop offset="100%" stopColor={selected?.color} stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
+
                   <CartesianGrid stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
                   <XAxis dataKey="month" tick={{ fill: '#cbd5e1', fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: '#cbd5e1', fontSize: 12 }} axisLine={false} tickLine={false} />
+
                   <Tooltip
                     contentStyle={{
                       borderRadius: 12,
@@ -203,7 +205,9 @@ export const App = () => {
                       color: '#f8fafc'
                     }}
                   />
+
                   <Area type="monotone" dataKey="value" fill="url(#areaGradient)" strokeOpacity={0} />
+
                   <Line
                     type="monotone"
                     dataKey="value"
