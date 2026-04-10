@@ -1,7 +1,7 @@
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #24312b;
-  background: linear-gradient(150deg, #edf4f0 0%, #e6efe9 45%, #f3f7f4 100%);
+  background: linear-gradient(150deg, #f2f6ff 0%, #ecf8f1 40%, #fff5ef 100%);
 }
 
 * {
@@ -119,7 +119,7 @@ h1 {
   border: 1px solid #cfddd7;
   padding: 18px;
   border-radius: 14px;
-  background: #f8fcf9;
+  background: linear-gradient(130deg, #fbfffd 0%, #f3fbf7 100%);
   color: #374741;
   text-align: left;
   cursor: pointer;
@@ -133,7 +133,7 @@ h1 {
 
 .metric-card.active {
   border-color: var(--accent);
-  box-shadow: 0 14px 28px rgba(93, 118, 108, 0.18);
+  box-shadow: 0 14px 28px rgba(93, 118, 108, 0.18), 0 0 0 2px color-mix(in srgb, var(--accent) 35%, #fff);
 }
 
 .metric-title {
@@ -173,7 +173,7 @@ h1 {
 
 .overview-card {
   border-radius: 16px;
-  background: #f8fcf9;
+  background: linear-gradient(160deg, #fbfffd 0%, #f5faf8 55%, #f8f2ff 100%);
   padding: 20px;
   box-shadow: 0 16px 30px rgba(93, 118, 108, 0.12);
   border: 1px solid #d0ddd7;
@@ -181,7 +181,7 @@ h1 {
 
 .side-insights {
   border-radius: 16px;
-  background: #f8fcf9;
+  background: linear-gradient(170deg, #f8fbff 0%, #f2faf5 100%);
   padding: 20px;
   border: 1px solid #d0ddd7;
   box-shadow: 0 16px 30px rgba(93, 118, 108, 0.08);
@@ -258,7 +258,7 @@ h2 {
 }
 
 .details-page {
-  background: #f4faf6;
+  background: linear-gradient(165deg, #f7fdff 0%, #f4faf6 55%, #fcf6ff 100%);
   border-radius: 18px;
   padding: 18px;
   border: 1px solid #d0ddd7;
@@ -277,7 +277,7 @@ h2 {
 .details-layout {
   margin-top: 14px;
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 200px 1fr;
   gap: 14px;
 }
 
@@ -317,7 +317,7 @@ h2 {
 .details-cards-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 
 .details-card {
@@ -326,7 +326,7 @@ h2 {
   background: #f8fcf9;
   color: #3e524a;
   text-align: left;
-  padding: 14px;
+  padding: 12px;
   cursor: pointer;
 }
 
@@ -337,12 +337,49 @@ h2 {
 
 .details-card h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .details-card p {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: #62756d;
+  font-size: 0.84rem;
+}
+
+.details-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.kpi-pill {
+  border: 1px solid #d7e1dc;
+  border-radius: 12px;
+  background: linear-gradient(120deg, #ffffff 0%, #f4fbf7 100%);
+  padding: 10px 12px;
+}
+
+.kpi-pill p {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #748780;
+}
+
+.kpi-pill strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.05rem;
+  color: #2f433b;
+}
+
+.kpi-up {
+  color: #2d9a6f !important;
+}
+
+.kpi-down {
+  color: #cc5656 !important;
 }
 
 .details-graph {

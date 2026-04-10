@@ -6,6 +6,7 @@ import {
   AreaChart,
   CartesianGrid,
   Line,
+  ReferenceDot,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -20,6 +21,10 @@ type NotificationSeverity = 'ok' | 'warn' | 'down';
 type Point = {
   month: string;
   value: number;
+};
+
+type ChartPoint = Point & {
+  bestFit: number;
 };
 
 type DashboardMetric = {
@@ -185,6 +190,30 @@ const getNextMetric = (data: DashboardMetric[], activeMetric: MetricKey, directi
   return data[nextIndex].key;
 };
 
+const withBestFit = (points: Point[]): ChartPoint[] => {
+  if (!points.length) return [];
+
+  const n = points.length;
+  const xMean = (n - 1) / 2;
+  const yMean = points.reduce((sum, point) => sum + point.value, 0) / n;
+
+  let numerator = 0;
+  let denominator = 0;
+
+  points.forEach((point, index) => {
+    numerator += (index - xMean) * (point.value - yMean);
+    denominator += (index - xMean) ** 2;
+  });
+
+  const slope = denominator === 0 ? 0 : numerator / denominator;
+  const intercept = yMean - slope * xMean;
+
+  return points.map((point, index) => ({
+    ...point,
+    bestFit: Number((intercept + slope * index).toFixed(2))
+  }));
+};
+
 export const App = () => {
   const { data = [], isLoading } = useQuery({
     queryKey: ['dashboard-metrics'],
@@ -203,6 +232,11 @@ export const App = () => {
     () => data.find((item) => item.key === activeMetric) ?? data[0],
     [activeMetric, data]
   );
+  const selectedChart = useMemo(() => withBestFit(selected?.chart ?? []), [selected]);
+  const latestPoint = selectedChart[selectedChart.length - 1];
+  const previousPoint = selectedChart[selectedChart.length - 2];
+  const delta = latestPoint && previousPoint ? latestPoint.value - previousPoint.value : 0;
+  const deltaDirection = delta >= 0 ? 'up' : 'down';
 
   const activeDetailCards = detailCardsByNav[activeDetailNav];
   const unreadAlerts = notifications.filter((item) => item.severity !== 'ok').length;
@@ -292,7 +326,7 @@ export const App = () => {
                 <div>
                   <p className="overview-label">Overview</p>
                   <h2>{selected?.label} trend</h2>
-                  <p className="overview-subtitle">Auto-switches every 5s when not hovered.</p>
+                  <p className="overview-subtitle">Auto-switches every 5s when not hovered. Best-fit line highlights long-term direction.</p>
                 </div>
 
                 <div className="carousel-controls">
@@ -318,7 +352,7 @@ export const App = () => {
                     className="chart-wrap"
                   >
                     <ResponsiveContainer width="100%" height={360}>
-                      <AreaChart data={selected?.chart}>
+                      <AreaChart data={selectedChart}>
                         <defs>
                           <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
                             <stop offset="0%" stopColor={selected?.color} stopOpacity={0.7} />
@@ -354,6 +388,25 @@ export const App = () => {
                           activeDot={{ r: 6 }}
                           animationDuration={650}
                         />
+                        <Line
+                          type="monotone"
+                          dataKey="bestFit"
+                          stroke="#7c63ff"
+                          strokeWidth={2}
+                          strokeDasharray="6 6"
+                          dot={false}
+                          animationDuration={650}
+                        />
+                        {latestPoint && (
+                          <ReferenceDot
+                            x={latestPoint.month}
+                            y={latestPoint.value}
+                            r={7}
+                            fill={selected?.color}
+                            stroke="#ffffff"
+                            strokeWidth={2}
+                          />
+                        )}
                       </AreaChart>
                     </ResponsiveContainer>
                   </motion.div>
@@ -368,6 +421,11 @@ export const App = () => {
                 <li>1 service is currently down and needs urgent action.</li>
                 <li>1 service has warning-level load.</li>
                 <li>All backups are healthy and completed.</li>
+                {latestPoint && (
+                  <li>
+                    {selected?.label} is {deltaDirection === 'up' ? 'up' : 'down'} by {Math.abs(delta).toFixed(1)} in the latest cycle.
+                  </li>
+                )}
               </ul>
             </aside>
           </section>
@@ -408,12 +466,29 @@ export const App = () => {
                 ))}
               </div>
 
+              <section className="details-kpi-strip">
+                <article className="kpi-pill">
+                  <p>Current</p>
+                  <strong>{latestPoint?.value ?? '--'}</strong>
+                </article>
+                <article className="kpi-pill">
+                  <p>Best-fit</p>
+                  <strong>{latestPoint?.bestFit ?? '--'}</strong>
+                </article>
+                <article className="kpi-pill">
+                  <p>Trend</p>
+                  <strong className={delta >= 0 ? 'kpi-up' : 'kpi-down'}>
+                    {delta >= 0 ? '▲' : '▼'} {Math.abs(delta).toFixed(1)}
+                  </strong>
+                </article>
+              </section>
+
               <section className="overview-card details-graph">
                 <div className="overview-header">
                   <div>
                     <p className="overview-label">{detailNavItems.find((item) => item.key === activeDetailNav)?.label}</p>
                     <h2>{selected?.label} insights</h2>
-                    <p className="overview-subtitle">Click sidebar or cards to load different graphs.</p>
+                    <p className="overview-subtitle">Compact view with best-fit, latest point marker, and focused controls.</p>
                   </div>
                 </div>
 
@@ -421,8 +496,8 @@ export const App = () => {
                   <div className="loading">Loading chart data…</div>
                 ) : (
                   <div className="chart-wrap">
-                    <ResponsiveContainer width="100%" height={320}>
-                      <AreaChart data={selected?.chart}>
+                    <ResponsiveContainer width="100%" height={290}>
+                      <AreaChart data={selectedChart}>
                         <CartesianGrid stroke="rgba(116, 129, 124, 0.25)" vertical={false} />
                         <XAxis dataKey="month" tick={{ fill: '#5f6f67', fontSize: 12 }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fill: '#5f6f67', fontSize: 12 }} axisLine={false} tickLine={false} />
@@ -435,6 +510,17 @@ export const App = () => {
                           }}
                         />
                         <Area type="monotone" dataKey="value" fill={selected?.color} fillOpacity={0.15} stroke={selected?.color} strokeWidth={3} />
+                        <Line type="monotone" dataKey="bestFit" stroke="#7c63ff" strokeWidth={2} strokeDasharray="6 6" dot={false} />
+                        {latestPoint && (
+                          <ReferenceDot
+                            x={latestPoint.month}
+                            y={latestPoint.value}
+                            r={7}
+                            fill={selected?.color}
+                            stroke="#ffffff"
+                            strokeWidth={2}
+                          />
+                        )}
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
