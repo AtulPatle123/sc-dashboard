@@ -71,8 +71,8 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
       valueLabel: '350,897',
       growth: '+6.9%',
       positive: true,
-      color: '#4C6FAE',
-      secondaryColor: '#7FA7D8',
+      color: '#008A52',
+      secondaryColor: '#56B88A',
       chartKind: 'area',
       chart: [
         { month: 'May', value: 120 },
@@ -91,8 +91,8 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
       valueLabel: '2,356',
       growth: '+2.1%',
       positive: true,
-      color: '#5E7FB1',
-      secondaryColor: '#8FB0D6',
+      color: '#0A9A63',
+      secondaryColor: '#6AC699',
       chartKind: 'bar',
       chart: [
         { month: 'May', value: 380 },
@@ -111,8 +111,8 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
       valueLabel: '924',
       growth: '+11.0%',
       positive: true,
-      color: '#4D86A4',
-      secondaryColor: '#7DB9C4',
+      color: '#1E8F5E',
+      secondaryColor: '#7EC8A8',
       chartKind: 'line',
       chart: [
         { month: 'May', value: 58 },
@@ -131,8 +131,8 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
       valueLabel: '49.65%',
       growth: '-1.4%',
       positive: false,
-      color: '#A6736A',
-      secondaryColor: '#C89A92',
+      color: '#5D986B',
+      secondaryColor: '#9BC6A5',
       chartKind: 'line',
       chart: [
         { month: 'May', value: 44 },
@@ -248,7 +248,7 @@ const buildCompositionData = (selected: DashboardMetric | undefined, latestPoint
   return [
     { name: 'Healthy', value: healthy, color: selected.color },
     { name: 'Warning', value: warning, color: selected.secondaryColor },
-    { name: 'Critical', value: critical, color: '#C38A88' }
+    { name: 'Critical', value: critical, color: '#8DAA95' }
   ];
 };
 
@@ -425,16 +425,16 @@ export const App = () => {
                           </linearGradient>
                         </defs>
 
-                        <CartesianGrid stroke="rgba(91, 112, 136, 0.2)" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fill: '#5f7289', fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#5f7289', fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <CartesianGrid stroke="rgba(81, 125, 102, 0.2)" vertical={false} />
+                        <XAxis dataKey="month" tick={{ fill: '#4e6f5b', fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#4e6f5b', fontSize: 12 }} axisLine={false} tickLine={false} />
 
                         <Tooltip
                           contentStyle={{
                             borderRadius: 12,
                             border: '1px solid rgba(135, 157, 182, 0.45)',
                             backgroundColor: '#ffffff',
-                            color: '#1f294f'
+                            color: '#1f4d37'
                           }}
                         />
 
@@ -568,14 +568,14 @@ export const App = () => {
                       <ResponsiveContainer width="100%" height={290}>
                         <ComposedChart data={selectedChart}>
                           <CartesianGrid stroke="rgba(91, 112, 136, 0.2)" vertical={false} />
-                          <XAxis dataKey="month" tick={{ fill: '#5f7289', fontSize: 12 }} axisLine={false} tickLine={false} />
-                          <YAxis tick={{ fill: '#5f7289', fontSize: 12 }} axisLine={false} tickLine={false} />
+                          <XAxis dataKey="month" tick={{ fill: '#4e6f5b', fontSize: 12 }} axisLine={false} tickLine={false} />
+                          <YAxis tick={{ fill: '#4e6f5b', fontSize: 12 }} axisLine={false} tickLine={false} />
                           <Tooltip
                             contentStyle={{
                               borderRadius: 12,
                               border: '1px solid rgba(135, 157, 182, 0.45)',
                               backgroundColor: '#ffffff',
-                              color: '#1f294f'
+                              color: '#1f4d37'
                             }}
                           />
                           {selected?.chartKind === 'bar' && (
@@ -617,7 +617,7 @@ export const App = () => {
                             borderRadius: 12,
                             border: '1px solid rgba(135, 157, 182, 0.45)',
                             backgroundColor: '#ffffff',
-                            color: '#1f294f'
+                            color: '#1f4d37'
                           }}
                         />
                         <Legend verticalAlign="bottom" height={30} />
