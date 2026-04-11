@@ -6,11 +6,13 @@ import { notificationIconBySeverity } from "../utils/notificationHelper";
 interface NotificationsPanelProps {
   isVisible: boolean;
   notifications: AlertNotification[];
+  onClose: () => void;
 }
 
 export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
   isVisible,
   notifications,
+  onClose,
 }) => {
   return (
     <AnimatePresence>
@@ -22,6 +24,12 @@ export const NotificationsPanel: React.FC<NotificationsPanelProps> = ({
           exit={{ opacity: 0, y: -12, scale: 0.98 }}
           transition={{ duration: 0.25, ease: "easeOut" }}
         >
+          <div className="notif-panel-header">
+            <span className="notif-panel-title">Notifications</span>
+            <button className="notif-close-btn" onClick={onClose} aria-label="Close notifications">
+              <i className="bi bi-x-lg" aria-hidden="true" />
+            </button>
+          </div>
           {notifications.map((item, index) => (
             <motion.article
               key={item.id}

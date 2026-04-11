@@ -20,7 +20,7 @@ export const DetailsKPIStrip: React.FC<DetailsKPIStripProps> = ({
       (m) =>
         m.name === `sc-${selectedModule}` ||
         m.name === selectedModule ||
-        m.name.endsWith(selectedModule)
+        m.name.endsWith(selectedModule),
     ) ?? selected?.modulesResponse[0];
 
   const deps = moduleInfo?.dependencies ?? [];
@@ -86,9 +86,7 @@ export const DetailsKPIStrip: React.FC<DetailsKPIStripProps> = ({
             </div>
             <div className="module-info-cell">
               <span className="info-cell-label">STATUS</span>
-              <span
-                className={`module-status-badge badge-${statusClass}`}
-              >
+              <span className={`module-status-badge badge-${statusClass}`}>
                 {statusArrow} {moduleInfo?.status ?? "—"}
               </span>
             </div>
@@ -112,17 +110,19 @@ export const DetailsKPIStrip: React.FC<DetailsKPIStripProps> = ({
                         <span className="dep-card-name">{dep.name}</span>
                       </div>
                       <div className="dep-card-footer">
-                        <span className="dep-instance-tag">1 instance</span>
-                        <span
-                          className={`dep-card-status text-${dep.status.toLowerCase()}`}
-                        >
-                          {dep.status === "UP"
-                            ? "↑"
-                            : dep.status === "DOWN"
-                              ? "↓"
-                              : "⚠"}{" "}
-                          {dep.status}
-                        </span>
+                        {dep.status === "UP" && (
+                          <span className="dep-card-status text-up">↑ UP</span>
+                        )}
+                        {dep.status === "DOWN" && (
+                          <span className="dep-card-status text-down">
+                            ↓ DOWN
+                          </span>
+                        )}
+                        {dep.status === "WARN" && (
+                          <span className="dep-card-status text-warn">
+                            ⚠ WARN
+                          </span>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -182,7 +182,12 @@ export const DetailsKPIStrip: React.FC<DetailsKPIStripProps> = ({
       {/* Telemetry Tab */}
       {activeTab === "telemetry" && (
         <div className="tab-empty-state">
-          <div className="tab-empty-icon">📡</div>
+          <div className="tab-empty-icon">
+            <i
+              className="bi bi-graph-up-arrow"
+              style={{ fontSize: "3rem", color: "var(--se-green-dark)" }}
+            />
+          </div>
           <h3>Telemetry</h3>
           <p>
             View real-time telemetry data for <strong>{selectedModule}</strong>.

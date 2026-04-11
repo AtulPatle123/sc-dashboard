@@ -61,19 +61,27 @@ export const App = () => {
         .flatMap((p) =>
           p.modulesResponse
             .filter((m) => m.status === "DOWN")
-            .map((m) => ({ service: m.name, platform: p.platform, timestamp: p.timestamp }))
+            .map((m) => ({
+              service: m.name,
+              platform: p.platform,
+              timestamp: p.timestamp,
+            })),
         )
         .concat(
           data.flatMap((p) =>
             p.modules
-              .filter((mod) =>
-                p.modulesResponse.some(
-                  (mr) =>
-                    mr.name.endsWith(mod) || mr.name === `sc-${mod}`,
-                ) === false && p.overallStatus === "DOWN"
+              .filter(
+                (mod) =>
+                  p.modulesResponse.some(
+                    (mr) => mr.name.endsWith(mod) || mr.name === `sc-${mod}`,
+                  ) === false && p.overallStatus === "DOWN",
               )
-              .map(() => ({ service: "service", platform: p.platform, timestamp: p.timestamp }))
-          )
+              .map(() => ({
+                service: "service",
+                platform: p.platform,
+                timestamp: p.timestamp,
+              })),
+          ),
         )[0]
     : null;
 
@@ -131,8 +139,7 @@ export const App = () => {
               </button>
             )}
             <div>
-              <p className="overview-label">Calm Operations Dashboard</p>
-              <h1>Service Health Center</h1>
+              <h1>SELECT AND CONFIG DASHBOARD</h1>
             </div>
           </div>
 
@@ -153,6 +160,7 @@ export const App = () => {
             <NotificationsPanel
               isVisible={showNotifications}
               notifications={notifications}
+              onClose={() => setShowNotifications(false)}
             />
           </div>
         </header>
@@ -163,13 +171,12 @@ export const App = () => {
             <span className="alert-badge">down</span>
             <div className="alert-content">
               <span className="alert-title">
-                {downAlert
-                  ? `${downAlert.service} DOWN`
-                  : notifAlert?.title}
+                {downAlert ? `${downAlert.service} DOWN` : notifAlert?.title}
               </span>
               {downAlert && (
                 <span className="alert-timestamp">
-                  {" "}· {formatAlertTime(downAlert.timestamp)}
+                  {" "}
+                  · {formatAlertTime(downAlert.timestamp)}
                 </span>
               )}
               <p className="alert-message">

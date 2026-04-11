@@ -159,10 +159,6 @@ export const HomeLayout: React.FC<HomeLayoutProps> = ({
 
         <aside className="side-insights">
           <h3>Quick Summary</h3>
-          <p className="overview-subtitle">
-            Using this space for a friendlier summary of what needs attention
-            now.
-          </p>
           <ul className="summary-list">
             {summary.map((line, i) => (
               <li key={i}>{line}</li>
