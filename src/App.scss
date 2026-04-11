@@ -1,0 +1,271 @@
+@import '~bootstrap/scss/bootstrap';
+
+.sc-grid-container {
+    padding-top: 20px;
+}
+
+
+.img {
+    width: 100%;
+}
+
+#root {
+    height: 100vh;
+}
+
+.App {
+    height: 100%;
+}
+
+.display-flex {
+    display: flex;
+}
+
+.display-inline {
+    display: inline;
+}
+
+.padding0 {
+    padding: 0 !important;
+}
+
+.pointer {
+    cursor: pointer;
+}
+
+.align-item-center {
+    display: flex;
+    align-items: center;
+}
+
+.flex-direction-column {
+    flex-direction: column;
+}
+
+.justify-content-space-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.justify-content-space-between {
+    display: flex;
+    justify-content: space-between;
+}
+
+.paddinglr0 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.flex-end {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.margin-top10 {
+    margin-top: 10px;
+}
+
+.margin-top20 {
+    margin-top: 20px;
+}
+
+.margin-top30 {
+    margin-top: 30px;
+}
+
+.margin-bottom20 {
+    margin-bottom: 20px;
+}
+
+.margin-bottom0 {
+    margin-bottom: 0;
+}
+
+.margin-left10 {
+    margin-left: 10px;
+}
+.margin-right10 {
+    margin-right: 10px;
+}
+.padding-10 {
+    padding: 10px;
+}
+
+.font-weight-medium{
+font-weight: 500;
+}
+
+.font-size14 {
+    font-size: 14px;
+}
+
+.font-size12 {
+    font-size: 12px;
+}
+
+.padding20 {
+    padding: 0 20px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.border-none {
+    border: none !important;
+}
+
+.sip-div {
+    min-height: 259px;
+    width: 1000px;
+    margin: 0 auto;
+    position: relative;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    margin-top: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+
+    form {
+        width: 100%;
+        padding: 0 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .select-div {
+        display: flex;
+        width: 100%;
+        margin: 0 auto 20px;
+        border-radius: 10px;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+        border: solid 1px #e7e7e7;
+        position: relative;
+
+    }
+
+    .sip-options {
+        width: 300px;
+        height: 112px;
+        padding: 10px 19px;
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+
+        &:not(:last-child) {
+            border-right: solid 1px #e7e7e7;
+
+        }
+
+        label {
+            color: #4a4a4a;
+            font-size: 14px;
+
+        }
+    }
+
+    .submit-btn {
+        position: absolute;
+        bottom: 0;
+        width: 216px;
+        padding: 10px;
+        margin-bottom: -20px;
+        opacity: 1;
+        border-radius: 34px;
+        box-shadow: 0 1px 7px 0 rgba(0, 0, 0, 0.2);
+        display: inline-block;
+        flex-shrink: 0;
+        color: #fff;
+        text-transform: uppercase;
+        cursor: pointer;
+        outline: 0;
+        border: 0;
+        text-align: center;
+        background: #3dcd58;
+
+        &:disabled {
+            opacity: 0.5;
+        }
+
+    }
+}
+
+.actions-button-cell {
+    overflow: visible;
+}
+
+.ag-row {
+    z-index: 0;
+    cursor: pointer;
+}
+
+.ag-row.ag-row-focus {
+    z-index: 1;
+}
+
+.ag-row.ag-row-no-focus.ag-row-level-0.ag-row-position-absolute {
+    z-index: 0 !important;
+    cursor: pointer;
+}
+
+.ag-cell-value,
+.ag-cell {
+    overflow: visible;
+    font-size: 13px;
+}
+
+.ag-theme-quartz .ag-header-group-cell {
+
+    background-color: #293133;
+    color: #e7e7e7;
+}
+
+.ag-header-container {
+    background-color: #293133;
+
+    .ag-header-cell-label,
+    .ag-icon-filter {
+        color: #f8f9fa;
+    }
+
+    .ag-header-cell-resize::after {
+        background-color: #f8f9fa;
+    }
+}
+
+.ag-cell {
+    display: flex !important;
+    align-items: center;
+}
+
+.ag-checkbox-input-wrapper.ag-disabled {
+    opacity: 1 !important;
+}
+
+div[role="dialog"][aria-modal="true"]:nth-last-child(1) {
+    z-index: 1125;
+  }
+  .modal-backdrop.show:nth-last-child(2){
+    z-index: 1100;
+  }
+  div[role="dialog"][aria-modal="true"]:nth-last-child(3) {
+    z-index: 1075;
+  }
+  .modal-backdrop.show:nth-last-child(4){
+    z-index: 1050;
+  }
+  div[role="dialog"][aria-modal="true"]:nth-last-child(5) {
+    z-index: 1025;
+  }
+  .modal-backdrop.show:nth-last-child(6){
+    z-index: 1000;
+  }

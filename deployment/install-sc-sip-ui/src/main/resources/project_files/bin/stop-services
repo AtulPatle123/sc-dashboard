@@ -1,0 +1,64 @@
+#!/bin/sh
+################################################################################
+#
+#         FILE: project_files/bin/stop-services
+#
+#        USAGE: project_files/bin/stop-services 
+#
+#  DESCRIPTION: This file start current application
+#               This script can be called either : 
+#                    - by applicative user %%USER_NAME%% to manually stop the application services.
+#                    - by root user to shutdown application services when the server shutdown.
+#
+#               This file usually require adaptation to fullfil its reposability, due to project adaptation.
+#               Per default, the script ensure the following task : 
+#                   - stop httpd server as root if folder & rc exist
+#                   - stop collectd server as root if folder & rc exist
+#
+#               This script relies and load local files ./setenv that must contains vars for Project PROJECT_NAME for env ENV.
+#               This script relies on project_files/bin/functions and script/*
+#
+#      OPTIONS: n/a
+#
+#        NOTES: 
+#
+#       AUTHOR: Serge Reboul
+#     DIVISION: Building & IT Business (former Partner Business)
+#      COMPANY: Schneider-Electric
+#===============================================================================
+
+#-------------------------------------------------------------------------------
+# Load env and functions
+CURRENT_DIR=`pwd`
+BASEDIR=$(dirname ${BASH_SOURCE[0]})
+. ${BASEDIR}/functions
+assert_zero $? "Impossible to load ${BASEDIR}/functions."
+. ${BASEDIR}/setenv
+assert_zero $? "Impossible to load ${BASEDIR}/setenv."
+
+#-------------------------------------------------------------------------------
+# Check input parameter and env variables
+
+if [ -z "${PROJECT_NAME}" ]; then
+    error "Environment variable (PROJECT_NAME) is not defined. It should be defined within ${BASEDIR}/setenv."
+fi
+
+#-------------------------------------------------------------------------------
+# Stop Httpd service (if folder ${HTTPD_DIR} exists)
+if [ "${HTTPD_DIR}" != "" ];
+then
+    log "== Request service httpd stop as root" 
+    rc_service httpd stop
+fi
+
+#-------------------------------------------------------------------------------
+# Stop Collectd service (if folder ${COLLECTD_DIR} exists)
+if [ "${COLLECTD_DIR}" != "" ];
+then
+    log "== Request service collectd stop as root" 
+    rc_service collectd stop
+fi
+
+
+#-------------------------------------------------------------------------------
+# add more command here to extend the shutdown script

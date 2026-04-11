@@ -1,5 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import React from "react";
 import type { CSSProperties } from 'react';
+
+import "./App.scss";
+import Header from "./components/header/header";
+import './styles.css';
+
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -18,9 +24,8 @@ import {
   XAxis,
   YAxis
 } from 'recharts';
-
-type MetricKey = 'traffic' | 'newUsers' | 'sales' | 'conversion';
-type DetailNavKey = 'healthCheckup' | 'monitoring' | 'traffic' | 'xyz';
+type MetricKey = 'SEMTECH' | 'ADS' | 'USM' | 'CMM';
+type DetailNavKey = 'healthCheckup' | 'monitoring' | 'SEMTECH' | 'xyz';
 type AppScreen = 'home' | 'details';
 type NotificationSeverity = 'ok' | 'warn' | 'down';
 type ChartKind = 'area' | 'bar' | 'line';
@@ -66,13 +71,13 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
 
   return [
     {
-      key: 'traffic',
-      label: 'Traffic',
+      key: 'SEMTECH',
+      label: 'SEMTECH',
       valueLabel: '350,897',
       growth: '+6.9%',
       positive: true,
-      color: '#008A52',
-      secondaryColor: '#56B88A',
+      color: '#4F46E5',
+      secondaryColor: '#06B6D4',
       chartKind: 'area',
       chart: [
         { month: 'May', value: 120 },
@@ -86,13 +91,13 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
       ]
     },
     {
-      key: 'newUsers',
+      key: 'ADS',
       label: 'New Users',
       valueLabel: '2,356',
       growth: '+2.1%',
       positive: true,
-      color: '#0A9A63',
-      secondaryColor: '#6AC699',
+      color: '#9333EA',
+      secondaryColor: '#EC4899',
       chartKind: 'bar',
       chart: [
         { month: 'May', value: 380 },
@@ -106,13 +111,13 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
       ]
     },
     {
-      key: 'sales',
-      label: 'Sales',
+      key: 'USM',
+      label: 'USM',
       valueLabel: '924',
       growth: '+11.0%',
       positive: true,
-      color: '#1E8F5E',
-      secondaryColor: '#7EC8A8',
+      color: '#0EA5E9',
+      secondaryColor: '#14B8A6',
       chartKind: 'line',
       chart: [
         { month: 'May', value: 58 },
@@ -126,13 +131,13 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
       ]
     },
     {
-      key: 'conversion',
-      label: 'Conversion',
+      key: 'CMM',
+      label: 'CMM',
       valueLabel: '49.65%',
       growth: '-1.4%',
       positive: false,
-      color: '#5D986B',
-      secondaryColor: '#9BC6A5',
+      color: '#F97316',
+      secondaryColor: '#EF4444',
       chartKind: 'line',
       chart: [
         { month: 'May', value: 44 },
@@ -150,27 +155,27 @@ const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
 
 const detailCardsByNav: Record<DetailNavKey, DetailCard[]> = {
   healthCheckup: [
-    { id: 'hc-1', title: 'Vitals Stability', subtitle: 'Track baseline health trends', metricKey: 'traffic' },
-    { id: 'hc-2', title: 'Recovery Index', subtitle: 'Follow improvement trajectory', metricKey: 'conversion' }
+    { id: 'hc-1', title: 'Vitals Stability', subtitle: 'Track baseline health trends', metricKey: 'SEMTECH' },
+    { id: 'hc-2', title: 'Recovery Index', subtitle: 'Follow improvement trajectory', metricKey: 'CMM' }
   ],
   monitoring: [
-    { id: 'mn-1', title: 'Live Monitoring', subtitle: 'Real-time usage and alerts', metricKey: 'newUsers' },
-    { id: 'mn-2', title: 'Watchlist Status', subtitle: 'Observe systems in focus', metricKey: 'sales' }
+    { id: 'mn-1', title: 'Live Monitoring', subtitle: 'Real-time usage and alerts', metricKey: 'ADS' },
+    { id: 'mn-2', title: 'Watchlist Status', subtitle: 'Observe systems in focus', metricKey: 'USM' }
   ],
-  traffic: [
-    { id: 'tf-1', title: 'Inbound Flow', subtitle: 'Source and session patterns', metricKey: 'traffic' },
-    { id: 'tf-2', title: 'Channel Split', subtitle: 'Compare segment performance', metricKey: 'sales' }
+  SEMTECH: [
+    { id: 'tf-1', title: 'Inbound Flow', subtitle: 'Source and session patterns', metricKey: 'SEMTECH' },
+    { id: 'tf-2', title: 'Channel Split', subtitle: 'Compare segment performance', metricKey: 'USM' }
   ],
   xyz: [
-    { id: 'xy-1', title: 'XYZ Momentum', subtitle: 'Dummy KPI performance pulse', metricKey: 'conversion' },
-    { id: 'xy-2', title: 'XYZ Reliability', subtitle: 'Operational confidence score', metricKey: 'newUsers' }
+    { id: 'xy-1', title: 'XYZ Momentum', subtitle: 'Dummy KPI performance pulse', metricKey: 'CMM' },
+    { id: 'xy-2', title: 'XYZ Reliability', subtitle: 'Operational confidence score', metricKey: 'ADS' }
   ]
 };
 
 const detailNavItems: Array<{ key: DetailNavKey; label: string }> = [
   { key: 'healthCheckup', label: 'Health Checkup' },
   { key: 'monitoring', label: 'Monitoring' },
-  { key: 'traffic', label: 'Traffic' },
+  { key: 'SEMTECH', label: 'SEMTECH' },
   { key: 'xyz', label: 'XYZ' }
 ];
 
@@ -248,7 +253,7 @@ const buildCompositionData = (selected: DashboardMetric | undefined, latestPoint
   return [
     { name: 'Healthy', value: healthy, color: selected.color },
     { name: 'Warning', value: warning, color: selected.secondaryColor },
-    { name: 'Critical', value: critical, color: '#8DAA95' }
+    { name: 'Critical', value: critical, color: '#F43F5E' }
   ];
 };
 
@@ -259,7 +264,7 @@ export const App = () => {
   });
 
   const [screen, setScreen] = useState<AppScreen>('home');
-  const [activeMetric, setActiveMetric] = useState<MetricKey>('traffic');
+  const [activeMetric, setActiveMetric] = useState<MetricKey>('SEMTECH');
   const [isGraphHovered, setIsGraphHovered] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -311,6 +316,9 @@ export const App = () => {
   } as CSSProperties;
 
   return (
+    <div>
+        <Header/>
+        
     <main className="app-shell" style={chartStyles}>
       <header className="top-bar">
         <div>
@@ -425,16 +433,16 @@ export const App = () => {
                           </linearGradient>
                         </defs>
 
-                        <CartesianGrid stroke="rgba(81, 125, 102, 0.2)" vertical={false} />
-                        <XAxis dataKey="month" tick={{ fill: '#4e6f5b', fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fill: '#4e6f5b', fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <CartesianGrid stroke="rgba(67, 76, 120, 0.2)" vertical={false} />
+                        <XAxis dataKey="month" tick={{ fill: '#545c8a', fontSize: 12 }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fill: '#545c8a', fontSize: 12 }} axisLine={false} tickLine={false} />
 
                         <Tooltip
                           contentStyle={{
                             borderRadius: 12,
-                            border: '1px solid rgba(135, 157, 182, 0.45)',
+                            border: '1px solid rgba(135, 146, 214, 0.45)',
                             backgroundColor: '#ffffff',
-                            color: '#1f4d37'
+                            color: '#1f294f'
                           }}
                         />
 
@@ -458,7 +466,7 @@ export const App = () => {
                         <Line
                           type="monotone"
                           dataKey="bestFit"
-                          stroke="#6D9F8E"
+                          stroke="#10B981"
                           strokeWidth={2}
                           strokeDasharray="6 6"
                           dot={false}
@@ -567,15 +575,15 @@ export const App = () => {
                     <div className="chart-wrap">
                       <ResponsiveContainer width="100%" height={290}>
                         <ComposedChart data={selectedChart}>
-                          <CartesianGrid stroke="rgba(91, 112, 136, 0.2)" vertical={false} />
-                          <XAxis dataKey="month" tick={{ fill: '#4e6f5b', fontSize: 12 }} axisLine={false} tickLine={false} />
-                          <YAxis tick={{ fill: '#4e6f5b', fontSize: 12 }} axisLine={false} tickLine={false} />
+                          <CartesianGrid stroke="rgba(67, 76, 120, 0.2)" vertical={false} />
+                          <XAxis dataKey="month" tick={{ fill: '#545c8a', fontSize: 12 }} axisLine={false} tickLine={false} />
+                          <YAxis tick={{ fill: '#545c8a', fontSize: 12 }} axisLine={false} tickLine={false} />
                           <Tooltip
                             contentStyle={{
                               borderRadius: 12,
-                              border: '1px solid rgba(135, 157, 182, 0.45)',
+                              border: '1px solid rgba(135, 146, 214, 0.45)',
                               backgroundColor: '#ffffff',
-                              color: '#1f4d37'
+                              color: '#1f294f'
                             }}
                           />
                           {selected?.chartKind === 'bar' && (
@@ -584,7 +592,7 @@ export const App = () => {
                           {selected?.chartKind !== 'bar' && (
                             <Area type="monotone" dataKey="value" fill={selected?.color} fillOpacity={0.18} stroke={selected?.color} strokeWidth={3} />
                           )}
-                          <Line type="monotone" dataKey="bestFit" stroke="#6D9F8E" strokeWidth={2} strokeDasharray="6 6" dot={false} />
+                          <Line type="monotone" dataKey="bestFit" stroke="#10B981" strokeWidth={2} strokeDasharray="6 6" dot={false} />
                           {latestPoint && (
                             <ReferenceDot
                               x={latestPoint.month}
@@ -615,9 +623,9 @@ export const App = () => {
                         <Tooltip
                           contentStyle={{
                             borderRadius: 12,
-                            border: '1px solid rgba(135, 157, 182, 0.45)',
+                            border: '1px solid rgba(135, 146, 214, 0.45)',
                             backgroundColor: '#ffffff',
-                            color: '#1f4d37'
+                            color: '#1f294f'
                           }}
                         />
                         <Legend verticalAlign="bottom" height={30} />
@@ -631,5 +639,9 @@ export const App = () => {
         </section>
       )}
     </main>
+
+    </div>
   );
-};
+}
+
+export default App;

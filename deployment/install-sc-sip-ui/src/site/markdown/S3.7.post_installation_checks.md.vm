@@ -1,0 +1,8 @@
+<h2> Post-Installation Checks
+</h2>
+
+* All the pre-condition and post-condition listed in the previous chapter are properly fullfilled.
+* Deployed WebApplication are properly deployed on S3.
+* ___TO_BE_DEFINED___ : URL to access the sevrice (with the public dns name, through the ELB) + expected http response code
+* ___TO_BE_DEFINED___ : URLPostman full scenario to test the service
+

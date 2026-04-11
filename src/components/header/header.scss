@@ -1,0 +1,19 @@
+.se-header-profile-zone {
+    border-bottom: 5px solid #009530;
+
+    .header-container {
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 10px;
+
+        .app-title {
+            font-size: 20px;
+            color: #3dcd58;
+            margin-bottom: 0;
+            font-weight: 500;
+            span{
+                font-weight: 400;
+            }
+        }
+    }
+}

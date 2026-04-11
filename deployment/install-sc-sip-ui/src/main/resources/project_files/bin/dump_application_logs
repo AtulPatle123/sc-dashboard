@@ -1,0 +1,52 @@
+#!/bin/sh
+################################################################################
+#
+#         FILE: project_files/bin/dump_application_log
+#
+#        USAGE: project_files/bin/dump_application_log
+#
+#  DESCRIPTION: This file sdump application todays logs on stdout
+#
+#               This script relies and load local files ./setenv that must contains vars for Project PROJECT_NAME for env ENV.
+#               This script relies on project_files/bin/functions and script/*
+#
+#      OPTIONS: n/a
+#
+#        NOTES: 
+#
+#       AUTHOR: Serge Reboul
+#     DIVISION: Building & IT Business (former Partner Business)
+#      COMPANY: Schneider-Electric
+#===============================================================================
+
+#-------------------------------------------------------------------------------
+# Load env and functions
+CURRENT_DIR=`pwd`
+BASEDIR=$(dirname ${BASH_SOURCE[0]})
+. ${BASEDIR}/functions
+assert_zero $? "Impossible to load ${BASEDIR}/functions."
+. ${BASEDIR}/setenv
+assert_zero $? "Impossible to load ${BASEDIR}/setenv."
+
+#-------------------------------------------------------------------------------
+# Check input parameter and env variables
+if [ -z "${PROJECT_NAME}" ]; then
+    error "Environment variable (PROJECT_NAME) is not defined. It should be defined within ${BASEDIR}/setenv."
+fi
+if [ -z "${USER_NAME}" ]; then
+    error "Environment variable (USER_NAME) is not defined. It should be defined within ${BASEDIR}/setenv."
+fi
+
+#-------------------------------------------------------------------------------
+# Dump log for Tomcat application (if folder ${TOMCAT_HOME} exists)
+if [ -d "${TOMCAT_HOME}" ];
+then
+    dump_server_today_logs "${TOMCAT_HOME}/logs/catalina.out" "%b %d, %Y"
+fi
+
+#-------------------------------------------------------------------------------
+# Dump log for NodeJS application (if folder ${NODEJS_HOME} exists)
+if [ -d "${NODEJS_HOME}" ];
+then
+    dump_server_today_logs "${NODEJS_HOME}/xxxxxxx" "TBD"
+fi

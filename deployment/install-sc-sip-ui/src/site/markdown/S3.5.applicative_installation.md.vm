@@ -1,0 +1,84 @@
+This chapter describe the process to install the applicative server based on previously retrieved, extracted and configured release binary.
+
+These task are mandatory prior any applicative or bd installation.
+
+They need to be executed on every server referenced in `[INSTALL_SERVER]`.
+
+Applicative installation go through the following step : 
+
+* Backup previous applicative instances
+* Execute Release installation process
+* Proceed to configuration changes if any
+* Proceed to other changes if any
+* Checkup successful install
+
+
+**Important** : 
+
+* All of them are mandatory and shall be executed in this order.
+* When a step fail, the process shall stop until the correction is found.
+* Once correction have been achieved, the process can continue by restarting from the stopped step.
+
+<h2> Prerequisite
+</h2>
+
+On every server referenced in `[INSTALL_SERVER]`, ensure that the following requirement are fulfilled : 
+
+* Release archive deployment and configuration have been properly fulfilled, as described in the previous chapter.
+
+
+Note that all those pre-requisites (as well as the global ones) will be checked during the deployment process prior to any deployment operation. 
+If prerequisites are not checked, then the installation process will be aborted.
+
+
+<h2> Backup Process
+</h2>
+
+On every Prod S3 bucket, ensure S3 Backup based on Ops process.
+
+<h2> Deployment Process Detail
+</h2>
+
+On every server referenced in `[INSTALL_SERVER]`, execute deployment script
+
+Logged as user `${USER_NAME}`, the update script must be executed
+
+```shell
+$ cd /app/release/${RELEASE_NAME}
+$ ./update.sh ${ENV}
+```
+
+The script must finish without any error.
+
+
+<h2> Configuration Changes (if Any)
+</h2>
+
+On every server referenced in `[INSTALL_SERVER]`, execute configuration changes as defined bellow (when any)
+
+* ___TODO-COMPLETE_THE_LIST_IF_NEEDED___
+
+
+<h2> Other Changes (If Any)
+</h2>
+
+On every server referenced in `[INSTALL_SERVER]`, execute changes defined bellow (when any)
+
+* ___TODO-COMPLETE_THE_LIST_IF_NEEDED___
+
+
+<h2> Checkup successful install
+</h2>
+
+On every server referenced in `[INSTALL_SERVER]`, execute checks to validated proper applicative installation :
+
+* Tomcat Server is properly running (if the server is not started, then it shall be started).
+
+* Tomcat Server is listening on port defined in configuration files for variables `TOMCAT_HTTP_PORT`, `TOMCAT_HTTPS_PORT` and `TOMCAT_SHUTDOWN_PORT`.
+
+* Deployed WebApplication are properly deployed on Tomcat Server .
+
+* Apache Httpd is properly running and is listening on port `80` & `443`.
+
+Note that these checks are not sufficient to declare the installation complete. 
+Tests need to be achieved by Dev Team once every IT equipments will be installed, upgrade, migrate, up and running.

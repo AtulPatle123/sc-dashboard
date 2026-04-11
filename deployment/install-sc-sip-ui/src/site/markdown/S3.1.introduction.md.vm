@@ -1,0 +1,43 @@
+
+<h2>Approbation
+</h2>
+
+|                                     | Technical Release Manager           | SE Release Manager                  | Release Installation Manager        | 
+| ----------------------------------- | ----------------------------------- | ----------------------------------- | ----------------------------------- |
+| Date and signature<br/>or remarks   |                                     |                                     |                                     | 
+|                                     |                                     |                                     |                                     | 
+
+
+<h2>Evolution notices
+</h2>
+
+| Rev.           | Date               | Author(s)                 | Description of evolutions                     |
+| -------------- | ------------------ | ------------------------- | --------------------------------------------- |
+|                |                    |                           |                                               |
+|                |                    |                           |                                               |
+
+
+<h2>Related documentations
+</h2>
+
+| Date               | Author(s)                 | Document                  | Title                                         |
+| ------------------ | ------------------------- | ------------------------- | --------------------------------------------- |
+|                    |                           |                           |                                               |
+|                    |                           |                           |                                               |
+
+
+<h2>Distribution
+</h2>
+
+|                            | Status                    | 
+| -------------------------- | ------------------------- |
+| For Schneider Electric:    | X                         |
+| For Development Team:      | X                         |
+| For Edifixio:              |                           |
+
+
+<h2>Objective
+</h2>
+
+This document define the installation of this release on S3 based environments.
+

@@ -1,0 +1,82 @@
+This chapter describe the process to retrieve the release binary, deploy them and configure them.
+
+These task are mandatory prior any applicative or bd installation.
+
+They need to be executed on a server referenced in `[INSTALL_SERVER]`.
+
+The complete process goes through the following step : 
+
+* Check every Prerequisite
+* Retrieve release archives
+* Extract it 
+* Configure it
+
+
+Important : 
+
+* All of them are mandatory and shall be executed in this order.
+* When a step fail, the process shall stop until the correction is found.
+* Once correction have been achieved, the process can continue by restarting from the stopped step.
+
+
+<h2> Prerequisite
+</h2>
+
+Every previous pre-requisite defined in the repvious chapter are fulfilled..
+
+
+
+<h2> Retrieve and Extract
+</h2>
+
+* Download and Extract release binary file.
+Release package for the application is a tar.gz file named `${RELEASE_TARGZ}` that can be retrieved from `${RELEASE_URL}`.
+
+* Copy this file in /tmp/
+
+* Proceed to tar.gz extraction under  `/app/release/`
+
+Logged as user `${USER_NAME}`, the binary tar.gz file need to be download and extract in  `/app/release/`
+
+```shell
+$ cd /app/release/
+$ tar xzvf /tmp/${RELEASE_TARGZ}
+```
+
+
+<h2> Configure installation
+</h2>
+
+Several configuration files are used within the installation process :
+
+* File `/app/release/${RELEASE_NAME}/conf/sc-sip-ui.properties` contains common configuration parameters that are not related to the env and that must not be edited by Ops.
+* File `/app/release/${RELEASE_NAME}/conf/sc-sip-ui.${ENV}.properties` contains `${ENV}` specific parameter. This file can create new parameter or overwrite values from the previous ones. Note that this file must not be directly changed by Ops, as described in the process bellow.
+* File `/app/release/conf/sc-sip-ui.${ENV}.properties` contains `${ENV}` specific parameter. This file can create new parameter or overwrite values from the previous ones. Note that this file must not be directly changed by Ops, as described in the process bellow.
+
+On every server referenced in `[INSTALL_SERVER]`, logged as user `${USER_NAME}`, the installation script must be configured before any execution.
+
+**Situation #1** : if File `/app/release/conf/sc-sip-ui.${ENV}.properties` does not exists.
+
+* If needed, create folder /app/release/conf
+
+```shell
+$ mkdir /app/release/conf
+```
+
+* Copy file `/app/release/${RELEASE_NAME}/conf/sc-sip-ui.${ENV}.properties` in `/app/release/conf`
+
+
+**Situation #2** : if File `/app/release/conf/sc-sip-ui.${ENV}.properties` already exists.
+
+In this situation, a previous installation of this application has been proceeding in this server. 
+Ops shall not overwrite the previous file but only update and complete it.
+    
+* If needed, edit and complete file `/app/release/conf/sc-sip-ui.${ENV}.properties`
+
+| Variable             | Description                                              | Need to be modified by Ops           |
+| ----------------------- | -------------------------------------------------------- | ------------------------------------ |
+| `USER_NAME`             | Name of the Applicative user on behalf which we will ensure the installation and run the servers. | Can be. For default value, see �2 |
+| `S3_BUCKET`             | Name of S3 Bucket                                        | Yes in Production                    |
+| `S3_REGION`             | Name of S3 Region.                                       | Yes in Production                    |
+| `AWS_ACCESS_KEY_ID`     | S3 Bucket AWS Id.                                        | Yes in Production                    |
+| `AWS_ACCESS_KEY_SECRET` | S3 Bucket AWS Paassword.                                 | Yes in Production                    |

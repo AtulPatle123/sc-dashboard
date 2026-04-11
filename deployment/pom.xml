@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.schneiderelectric.dces.sip</groupId>
+  <artifactId>sc-sip-ui-parent</artifactId>
+  <version>1.2.0</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>sc-sip-ui</module>
+    <module>install-sc-sip-ui</module>
+  </modules>
+
+  <properties>
+    <project.scm.id>dces_ci</project.scm.id>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
+  <scm>
+    <developerConnection>scm:git:https://github.schneider-electric.com/selectnconfig/Selector-Information-Portal.git</developerConnection>
+  </scm>
+
+  <distributionManagement>
+   <repository>
+      <id>em-dces-selectconfig-release-maven-fed</id>
+      <url>https://jfrog-euw.se.com/artifactory/em-dces-selectconfig-release-maven-fed</url>
+    </repository>
+    <snapshotRepository>
+      <id>em-dces-selectconfig-snapshot-maven-fed</id>
+      <url>https://jfrog-euw.se.com/artifactory/em-dces-selectconfig-snapshot-maven-fed</url>
+    </snapshotRepository>
+    <site>
+      <id>website</id>
+      <url>file:/tmp</url>
+    </site>
+  </distributionManagement>
+
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>http://ENTER_HERE_YOU_PROJECT_CI_URL/</url>
+  </ciManagement>
+
+  <issueManagement>
+    <system>JIRA</system>
+    <url>https://schneider-electric-se.atlassian.net/browse/ENTER_HERE_YOU_PROJECT_JIRA_NAME/</url>
+  </issueManagement>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>2.7</version>
+        <configuration>
+          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <!-- Need to configure maven-scm-plugin and maven-release-plugin, otherwise, Mvn release won't work with Git ! -->
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-scm-plugin</artifactId>
+          <version>1.9.4</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.scm</groupId>
+              <artifactId>maven-scm-provider-gitexe</artifactId>
+              <version>1.9.4</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.5.2</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.apache.maven.scm</groupId>
+              <artifactId>maven-scm-provider-gitexe</artifactId>
+              <version>1.9.4</version>
+            </dependency>
+          </dependencies>
+          <configuration>
+            <localCheckout>true</localCheckout>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <repositories>
+    <!-- reference dces repositories from which we probably depend on -->
+ <repository>
+      <id>em-dces-release-maven-fed</id>
+      <url>
+      https://jfrog-euw.se.com/artifactory/em-dces-release-maven-fed</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>em-dces-snapshot-maven-fed</id>
+      <url>
+      https://jfrog-euw.se.com/artifactory/em-dces-snapshot-maven-fed</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>em-dces-selectconfig-release-maven-fed</id>
+      <url>
+      https://jfrog-euw.se.com/artifactory/em-dces-selectconfig-release-maven-fed</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <!-- reference dces-selectconfig repositories when we depend on it -->
+    <!-- <repository>
+      <id>dces-selectconfig-repository</id>
+      <url>https://artifactory-dces.schneider-electric.com/artifactory/dces-selectconfig-release-local</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
+    <repository>
+      <id>dces-selectconfig-snapshot-repository</id>
+      <url>https://artifactory-dces.schneider-electric.com/artifactory/dces-selectconfig-snapshot-local</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository> -->
+    <!-- Old Pace repository -->
+    <repository>
+      <id>pace-repository</id>
+      <url>http://10.155.34.21:8081/artifactory/websdk-release-local</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
+    <repository>
+      <id>pace-snapshot-repository</id>
+      <url>http://10.155.34.21:8081/artifactory/websdk-snapshot-local</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+    <!-- Old DCES repository -->
+    <repository>
+      <id>old-dces-repository</id>
+      <url>http://10.155.34.21:8081/artifactory/dces-release-local</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
+    <repository>
+      <id>old-dces-snapshot-repository</id>
+      <url>http://10.155.34.21:8081/artifactory/dces-snapshot-local</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+    <repository>
+      <id>central</id>
+      <url>https://repo1.maven.org/maven2</url>
+    </repository>
+  </repositories>
+  <!-- Add other repository when needed -->
+  <pluginRepositories>
+    <pluginRepository>
+      <id>spring-milestones</id>
+      <url>https://repo.spring.io/milestone</url>
+    </pluginRepository>
+  </pluginRepositories>
+</project>

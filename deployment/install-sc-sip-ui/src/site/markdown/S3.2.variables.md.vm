@@ -1,0 +1,69 @@
+<h2> Sub-section S3 addresses 
+</h2>
+
+In this document, 
+
+* `[S3]` references the list of S3 Bucket that serve the current application for environment **ENV**. When a check or an action is request to be applied on `<SERVERS>`, this have to be achieved on every Host that is list in the previous table
+* `[INSTALL_SERVER]` references a sever from which you proceed to the installation.
+
+| Data          | PROD                                |
+| ------------- | ----------------------------------- |
+| S3 Bucket     | To be defined by IPO based on infra |
+| S3 Regon      | To be defined by IPO based on infra |
+| S3 Public DNS | To be defined by IPO based on infra |
+
+
+| Data          | PREPROD       |
+| ------------- | ------------- |
+| S3 Bucket     | TO_BE_DEFINED |
+| S3 Regon      | TO_BE_DEFINED |
+| S3 Public DNS | TO_BE_DEFINED |
+
+
+| Data          | SQE           |
+| ------------- | ------------- |
+| S3 Bucket     | TO_BE_DEFINED |
+| S3 Regon      | TO_BE_DEFINED |
+| S3 Public DNS | TO_BE_DEFINED |
+
+
+<h2> Global Installation Strategy
+</h2>
+
+Installation stratgey go through the following steps : 
+
+* Backup S3 Bucket
+* For Each S3 Bucket in `[S3]` do
+** Execute Web Application Server installation process (chapter 3, 4 and 5) on any server that can access the Bucket
+** Ensure post-installation action and Test installation with Post-Installation Checks (Chapter 7) 
+* Test installation with Post-Installation Checks (Chapter 7) with the public DNS of the application
+
+
+<h2> Variables
+</h2>
+
+In this installation guide, some variables are used :
+
+| Variable                | Description                                                                  |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| `${PROJECT_NAME}`       | Name of the project. Value = `sc-sip-ui`                                 |
+| `${PROJECT_HOME}`       | Home dit for the project. Value = `/app/sc-sip-ui`                         |
+| `${RELEASE_VERSION}`    | Version of the Current release. Value = `${project.version}`                 |
+| `${ENV}`                | Current Environment. Possibles values are `ci`, `sqe`, `ppr`, `prod`         |
+| `${USER_NAME}`          | Applicative User used to installation the application. <br/>* Value for CI, SQE, PPR = `app` <br/>* Value for PROD = `dces-___TO_BE_DEFINED___`         |
+| `${RELEASE_NAME}`       | Full name of the release. See value in `readme.md` contained in the doc archive  |
+| `${RELEASE_URL}`        | Url where to download release binary. See value in `readme.md` contained in the doc archive  |
+| `${RELEASE_TARGZ}`      | Name of the file downloaded via the previous url. See value in `readme.md` contained in the doc archive  |
+| `${S3_BUCKET}`          | Name of S3 Bucket where to push applcation to. <br/> Values for CI, SQE, PPR are defined in release configuration files. <br/>Values for PPR & PROD are defined bellow         |
+| `${S3_REGION}`          | Name of S3 Region. <br/> Values for CI, SQE, PPR are defined in release configuration files. <br/>Values for PPR & PROD are defined bellow         |
+| `${AWS_ACCESS_KEY_ID}`     | S3 Bucket AWS Id. Need to be adapt for Every Env |
+| `${AWS_ACCESS_KEY_SECRET}` | S3 Bucket AWS Paassword. Need to be adapt for Every Env |
+| `${S3_URL}`             | Bae Url to reach S3 Bucket exposed ( for prod, exposure if CF based on the Web, can be different elsewhere)   |
+
+
+**Important Note** : 
+
+** For each variable, when the value contains BASH special characters, those special characters must be protected when the value is used in any command.**
+
+See http://www.gnu.org/software/bash/manual/bashref.html for more information on bash special characters.
+

@@ -1,0 +1,31 @@
+<document xmlns="http://maven.apache.org/DOCUMENT/1.0.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/DOCUMENT/1.0.1 http://maven.apache.org/xsd/document-1.0.1.xsd"
+  outputName="full_installation_guide">
+
+  <meta>
+    <title>sc-sip-ui - release ${versionWithoutSnapshotSuffix} - Full S3 Installation Guide</title>
+    <author>Schneider-Electric DCES</author>
+  </meta>
+
+  <toc name="Table of Contents">
+      <item name="Introduction"                   ref="S3.1.introduction.md.vm" />
+      <item name="Useful Data for Installation"   ref="S3.2.variables.md.vm" />
+      <item name="Prerequisite"                   ref="S3.3.prerequisite.md.vm" />
+      <item name="Deploy and Configure Release"   ref="S3.4.release_configuration.md.vm" />
+      <item name="Applicative Installation Steps" ref="S3.5.applicative_installation.md.vm" />
+      <item name="Database Installation Steps"    ref="S3.6.db_installation.md.vm" />
+      <item name="Post-Installation checks"       ref="S3.7.post_installation_checks.md.vm" />
+      <item name="Rollback"                       ref="S3.8.rollback.md.vm" />
+  </toc>
+
+  <cover>
+     <coverTitle>sc-sip-ui</coverTitle>
+     <coverSubTitle>v. ${versionWithoutSnapshotSuffix}</coverSubTitle>
+     <coverType>Full S3 Installation Guide</coverType>
+     <projectName>sc-sip-ui</projectName>
+     <author>DCES</author>
+     <companyName>Schneider-Electric</companyName>
+  </cover>
+   
+</document>

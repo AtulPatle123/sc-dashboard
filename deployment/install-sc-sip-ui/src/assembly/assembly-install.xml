@@ -1,0 +1,112 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+   <id>install</id>
+   <includeBaseDirectory>false</includeBaseDirectory>
+   <formats>
+      <format>tar.gz</format>
+   </formats>
+   <files>
+      <!-- Copy and substitute files project_files/release_note.md !-->
+      <file>
+         <source>${basedir}/src/main/resources/project_files/release_note.md</source>
+         <outputDirectory>/sc-sip-ui-release-${project.version}/project_files</outputDirectory>
+         <filtered>true</filtered>
+      </file>
+      <file>
+         <source>${basedir}/src/main/resources/project.sh</source>
+         <outputDirectory>/sc-sip-ui-release-${project.version}</outputDirectory>
+         <filtered>true</filtered>
+      </file>
+   </files>
+   <fileSets>
+      <!-- Copy and convert every files in conf, script, project_files/rc & project_files/bin !-->
+      <fileSet>
+         <directory>${basedir}/src/main/resources</directory>
+         <outputDirectory>/sc-sip-ui-release-${project.version}</outputDirectory>
+         <lineEnding>unix</lineEnding>
+         <fileMode>0755</fileMode>
+         <includes>
+            <include>conf/**/*</include>
+            <include>scripts/**/*</include>
+            <include>project_files/rc/**/*</include>
+            <include>project_files/bin/**/*</include>
+         </includes>
+         <excludes>
+            <exclude>project.sh</exclude>
+            <exclude>**/readme.md</exclude>
+            <exclude>**/release_note.md</exclude> 
+         </excludes>
+      </fileSet>
+      <!-- Copy without convert every other files from src !-->
+      <fileSet>
+         <directory>${basedir}/src/main/resources</directory>
+         <outputDirectory>/sc-sip-ui-release-${project.version}</outputDirectory>
+         <fileMode>0755</fileMode>
+         <includes>
+            <include>**/*</include>
+         </includes>
+         <excludes>
+            <exclude>project.sh</exclude>
+            <exclude>conf/**/*</exclude>
+            <exclude>scripts/**/*</exclude>
+            <exclude>project_files/rc/**/*</exclude>
+            <exclude>project_files/bin/**/*</exclude>
+            <exclude>**/readme.md</exclude>
+            <exclude>**/release_note.md</exclude>
+         </excludes>
+      </fileSet>
+      <!-- Copy scripts from install-tool-scripts !-->
+      <fileSet>
+         <directory>${basedir}/target/scripts</directory>
+         <outputDirectory>/sc-sip-ui-release-${project.version}</outputDirectory>
+         <lineEnding>unix</lineEnding>
+         <fileMode>0755</fileMode>
+         <includes>
+            <include>**/*</include>
+         </includes>
+      </fileSet>
+      <!-- Copy war !-->
+      <fileSet>
+         <directory>${basedir}/target/binaries</directory>
+         <outputDirectory>/sc-sip-ui-release-${project.version}/tomcat_war</outputDirectory>
+         <fileMode>0644</fileMode>
+         <includes>
+            <include>**/*.war</include>
+         </includes>
+      </fileSet>
+      <!-- Copy sql, wheneve any !-->
+      <fileSet>
+         <directory>${basedir}/target/sql</directory>
+         <outputDirectory>/sc-sip-ui-release-${project.version}/project_files/sql/</outputDirectory>
+         <fileMode>0644</fileMode>
+         <includes>
+            <include>**/*.sql</include>
+         </includes>
+      </fileSet>      
+      <!-- Copy mongo scripts !-->
+      <fileSet>
+         <directory>${basedir}/target/mongo</directory>
+         <outputDirectory>/retail-swb-engine-release-${project.version}/project_files/mongo/</outputDirectory>
+         <fileMode>0644</fileMode>
+         <includes>
+            <include>**/*.*</include>
+         </includes>
+      </fileSet>      
+      <!-- Copy web zip !-->
+      <fileSet>
+         <directory>${basedir}/target/binaries</directory>
+         <outputDirectory>/sc-sip-ui-release-${project.version}/web_zip</outputDirectory>
+         <fileMode>0644</fileMode>
+         <includes>
+            <include>**/*.zip</include>
+            <include>**/*.tar.gz</include>
+            <include>**/*.tgz</include>
+         </includes>
+         <excludes>
+            <exclude>**/*.sql.zip</exclude>
+            <exclude>**/*.mongo.zip</exclude>
+         </excludes>
+      </fileSet>
+   </fileSets>
+</assembly>

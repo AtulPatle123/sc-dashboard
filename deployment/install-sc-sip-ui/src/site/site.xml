@@ -1,0 +1,34 @@
+<project xmlns="http://maven.apache.org/DECORATION/1.6.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.6.0 http://maven.apache.org/xsd/decoration-1.6.0.xsd"
+  name="sc-sip-ui">
+
+ <!--
+ <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.4</version>
+  </skin>
+  -->
+  
+  <body>
+    <head/>
+    <menu name="Installation guide">
+
+      <item name="Project Info"       href="project-info.html" />
+
+      <item name="I.1 Introduction  " href="S3.1.introduction.html" />
+      <item name="I.2 Variables     " href="S3.2.variables.html" />
+      <item name="I.3 Pre-Install   " href="S3.3.prerequisite.html" />
+      <item name="I.4 Release Inst. " href="S3.4.release_configuration.html" />
+      <item name="I.5 App Inst.     " href="S3.5.applicative_installation.html" />
+      <item name="I.6 DB  Inst.     " href="S3.6.db_installation.html" />
+      <item name="I.7 PostInst.     " href="S3.7.post_installation_checks.html" />
+      <item name="I.8 Rollback      " href="S3.8.rollback.html" />
+
+    </menu>
+    
+    <footer>Schneider-Electric DCES - sc-dashboard-ui - S3 Installation Guide</footer>
+    
+  </body>
+    
+</project>

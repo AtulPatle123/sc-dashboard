@@ -1,0 +1,4 @@
+configureation.id=0/0
+configureation.name=[AWS S3 WebSite and/or RDITS-Webstore Web Site] with [nothing]
+configureation.files_folder=[project_files, s3_files]
+configureation.filterblocs=[S3]

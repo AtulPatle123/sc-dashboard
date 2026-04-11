@@ -1,0 +1,72 @@
+#!/bin/sh
+################################################################################
+#
+#         FILE: project_files/bin/stop-application
+#
+#        USAGE: project_files/bin/stop-application 
+#
+#  DESCRIPTION: This file start current application
+#               This script can be called either : 
+#                    - by applicative user %%USER_NAME%% to manually stop the application.
+#                    - by root user to shutdown application when the server shutdown.
+#
+#               This file usually require adaptation to fullfil its reposability, due to project adaptation.
+#               Per default, the script ensure the following task : 
+#                   - stop tomcat server as %%USER_NAME%% if TOMCAT_HOME & RC_TOMCAT are defined and exists
+#                   - stop nodeJS server as %%USER_NAME%% if NODEJS_HOME & RC_NODEJS are is defined and exists
+#
+#               This script relies and load local files ./setenv that must contains vars for Project PROJECT_NAME for env ENV.
+#               This script relies on project_files/bin/functions and script/*
+#
+#      OPTIONS: n/a
+#
+#        NOTES: 
+#
+#       AUTHOR: Serge Reboul
+#     DIVISION: Building & IT Business (former Partner Business)
+#      COMPANY: Schneider-Electric
+#===============================================================================
+
+#-------------------------------------------------------------------------------
+# Load env and functions
+CURRENT_DIR=`pwd`
+BASEDIR=$(dirname ${BASH_SOURCE[0]})
+. ${BASEDIR}/functions
+assert_zero $? "Impossible to load ${BASEDIR}/functions."
+. ${BASEDIR}/setenv
+assert_zero $? "Impossible to load ${BASEDIR}/setenv."
+
+#-------------------------------------------------------------------------------
+# Check input parameter and env variables
+
+if [ -z "${PROJECT_NAME}" ]; then
+    error "Environment variable (PROJECT_NAME) is not defined. It should be defined within ${BASEDIR}/setenv."
+fi
+if [ -z "${USER_NAME}" ]; then
+    error "Environment variable (USER_NAME) is not defined. It should be defined within ${BASEDIR}/setenv."
+fi
+
+#-------------------------------------------------------------------------------
+# Stop Tomcat application (if folder ${TOMCAT_HOME} exists)
+if [ -d "${TOMCAT_HOME}" ];
+then
+    log ${LOG_PARAM} "== Stop Tomcat application"
+    rc_operation ${USER_NAME} stop ${RC_TOMCAT}
+    assert_zero $? "Error while stopping Tomcat application."
+fi
+
+#-------------------------------------------------------------------------------
+# Stop NodeJS application (if folder ${NODEJS_HOME} exists)
+if [ -d "${NODEJS_HOME}" ];
+then
+    log ${LOG_PARAM} "== Stop NodeJS application"
+    rc_operation ${USER_NAME} stop ${RC_NODEJS}
+    assert_zero $? "Error while stopping NodeJS application."
+fi
+
+#-------------------------------------------------------------------------------
+# add more command here to extend the shutdown script
+
+log "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log "+ Shutdown acheived without detected errors."
+log "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
