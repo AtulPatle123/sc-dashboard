@@ -5,7 +5,6 @@ interface DetailsLayoutProps {
   selected: PlatformHealth | undefined;
   selectedModule: string;
   onModuleSelect: (module: string) => void;
-  onBackClick: () => void;
   children: React.ReactNode;
 }
 
@@ -31,20 +30,16 @@ export const DetailsLayout: React.FC<DetailsLayoutProps> = ({
   selected,
   selectedModule,
   onModuleSelect,
-  onBackClick,
   children,
 }) => {
   const modulesResponse = selected?.modulesResponse ?? [];
 
   return (
     <div className="details-layout">
-      {/* ── Dark Sidebar ── */}
+      {/* ── SE Green Sidebar ── */}
       <aside className="details-sidebar">
-        <div className="sidebar-header">
-          <button className="back-button" onClick={onBackClick}>
-            <i className="bi bi-arrow-left" aria-hidden="true" />
-            <span>Back to Dashboard</span>
-          </button>
+        <div className="sidebar-platform-label">
+          {selected?.platform ?? "Modules"}
         </div>
 
         <nav className="sidebar-nav">

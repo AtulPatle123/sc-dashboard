@@ -120,9 +120,20 @@ export const App = () => {
 
       <main className="app-shell" style={chartStyles}>
         <header className="top-bar">
-          <div>
-            <p className="overview-label">Calm Operations Dashboard</p>
-            <h1>Service Health Center</h1>
+          <div className="top-bar-left">
+            {screen === "details" && (
+              <button
+                className="topbar-back-btn"
+                onClick={() => setScreen("home")}
+                aria-label="Back to Dashboard"
+              >
+                <i className="bi bi-arrow-left" aria-hidden="true" />
+              </button>
+            )}
+            <div>
+              <p className="overview-label">Calm Operations Dashboard</p>
+              <h1>Service Health Center</h1>
+            </div>
           </div>
 
           <div className="notif-wrapper">
@@ -208,7 +219,6 @@ export const App = () => {
                 selected={selected}
                 selectedModule={selectedModule}
                 onModuleSelect={setSelectedModule}
-                onBackClick={() => setScreen("home")}
               >
                 <DetailsKPIStrip
                   selected={selected}
