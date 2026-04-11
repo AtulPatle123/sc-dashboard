@@ -116,8 +116,11 @@ export const App = () => {
                 }
                 onGraphMouseEnter={() => setIsGraphHovered(true)}
                 onGraphMouseLeave={() => setIsGraphHovered(false)}
-                onViewDetails={() => {
-                  setSelectedModule(selected?.modules[0] || "");
+                onNavigateToDetails={(platform) => {
+                  const selectedPlatform = data.find(
+                    (item) => item.platform === platform,
+                  );
+                  setSelectedModule(selectedPlatform?.modules[0] || "");
                   setScreen("details");
                 }}
               />

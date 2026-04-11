@@ -7,12 +7,14 @@ interface MetricsGridProps {
   data: PlatformHealth[];
   activeMetric: string;
   onMetricClick: (platform: string) => void;
+  onNavigateToDetails: (platform: string) => void;
 }
 
 export const MetricsGrid: React.FC<MetricsGridProps> = ({
   data,
   activeMetric,
   onMetricClick,
+  onNavigateToDetails,
 }) => {
   return (
     <section className="metrics-grid">
@@ -20,7 +22,10 @@ export const MetricsGrid: React.FC<MetricsGridProps> = ({
         <button
           key={metric.platform}
           className={`metric-card ${metric.platform === activeMetric ? "active" : ""}`}
-          onClick={() => onMetricClick(metric.platform)}
+          onClick={() => {
+            onMetricClick(metric.platform);
+            onNavigateToDetails(metric.platform);
+          }}
           style={
             {
               "--accent": getStatusColor(metric.overallStatus),

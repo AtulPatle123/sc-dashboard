@@ -2,7 +2,6 @@ import React from "react";
 import { MetricsGrid } from "./MetricsGrid";
 import { HealthMetricsGraph } from "./HealthMetricsGraph";
 import { PlatformSummary } from "./PlatformSummary";
-import { PlatformLinks } from "./PlatformLinks";
 import type { PlatformHealth, MetricKey } from "../models/dashboard";
 
 interface HomeLayoutProps {
@@ -14,7 +13,7 @@ interface HomeLayoutProps {
   onMetricClick: (platform: string) => void;
   onGraphMouseEnter: () => void;
   onGraphMouseLeave: () => void;
-  onViewDetails: () => void;
+  onNavigateToDetails: (platform: string) => void;
 }
 
 export const HomeLayout: React.FC<HomeLayoutProps> = ({
@@ -26,7 +25,7 @@ export const HomeLayout: React.FC<HomeLayoutProps> = ({
   onMetricClick,
   onGraphMouseEnter,
   onGraphMouseLeave,
-  onViewDetails,
+  onNavigateToDetails,
 }) => {
   return (
     <>
@@ -34,6 +33,7 @@ export const HomeLayout: React.FC<HomeLayoutProps> = ({
         data={data}
         activeMetric={activeMetric}
         onMetricClick={(platform) => onMetricClick(platform as MetricKey)}
+        onNavigateToDetails={(platform) => onNavigateToDetails(platform as MetricKey)}
       />
 
       <section className="home-layout">
@@ -54,14 +54,6 @@ export const HomeLayout: React.FC<HomeLayoutProps> = ({
             onMouseEnter={onGraphMouseEnter}
             onMouseLeave={onGraphMouseLeave}
           />
-
-          <PlatformLinks selected={selected} />
-
-          <div className="platform-actions">
-            <button className="view-details-button" onClick={onViewDetails}>
-              View Module Details
-            </button>
-          </div>
         </section>
 
         <PlatformSummary selected={selected} />
