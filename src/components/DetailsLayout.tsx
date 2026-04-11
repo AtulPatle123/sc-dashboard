@@ -17,14 +17,15 @@ export const DetailsLayout: React.FC<DetailsLayoutProps> = ({
   children,
 }) => {
   return (
-    <>
-      <button className="back-button" onClick={onBackClick}>
-        <span aria-hidden>←</span>
-        Back to Dashboard
-      </button>
-
-      <div className="details-layout">
-        <aside className="details-sidebar">
+    <div className="details-layout">
+      <aside className="details-sidebar">
+        <div className="sidebar-header">
+          <button className="back-button" onClick={onBackClick}>
+            <i className="bi bi-arrow-left" aria-hidden="true"></i>
+            <span>Back</span>
+          </button>
+        </div>
+        <nav className="sidebar-nav">
           {selected?.modules.map((module) => (
             <button
               key={module}
@@ -34,10 +35,10 @@ export const DetailsLayout: React.FC<DetailsLayoutProps> = ({
               {module}
             </button>
           ))}
-        </aside>
+        </nav>
+      </aside>
 
-        <div className="details-content">{children}</div>
-      </div>
-    </>
+      <div className="details-content">{children}</div>
+    </div>
   );
 };

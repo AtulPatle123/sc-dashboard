@@ -513,17 +513,88 @@ div[role="dialog"][aria-modal="true"]:nth-last-child(1) {
 // Details Layout
 .details-layout {
   display: flex;
-  height: calc(100vh - 200px); // Adjust based on header height
-  overflow: hidden; // Prevent scrolling
+  height: calc(100vh - 130px);
+  overflow: hidden;
+  align-items: stretch;
+  box-sizing: border-box;
+}
+
+// Top Bar
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.overview-label {
+  margin: 0 0 4px 0;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.top-bar h1 {
+  margin: 0;
+  color: #1f294f;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.notification-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #374151;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+  }
+}
+
+.notification-badge {
+  background: #ef4444;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 16px;
+  text-align: center;
 }
 
 .details-sidebar {
-  width: 250px;
-  background: #f8fafc;
-  border-right: 1px solid #e2e8f0;
-  padding: 20px 0;
-  overflow-y: auto; // Allow sidebar to scroll if needed
+  width: 220px;
+  min-width: 220px;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  overflow-y: auto;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.sidebar-nav {
+  padding: 12px 0;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .sidebar-item {
@@ -533,28 +604,35 @@ div[role="dialog"][aria-modal="true"]:nth-last-child(1) {
   border: none;
   background: none;
   text-align: left;
-  color: #64748b;
-  font-size: 14px;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  border-left: 3px solid transparent;
 
   &:hover {
-    background: #e2e8f0;
-    color: #334155;
+    background: rgba(255, 255, 255, 0.06);
+    color: #e2e8f0;
+    border-left-color: #475569;
   }
 
   &.active {
-    background: #3b82f6;
-    color: white;
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
     font-weight: 600;
+    border-left-color: #3b82f6;
   }
 }
 
 .details-content {
   flex: 1;
-  overflow: hidden; // Prevent scrolling
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  box-sizing: border-box;
+  background: #f8fafc;
 }
 
 .details-split-layout {
@@ -562,6 +640,9 @@ div[role="dialog"][aria-modal="true"]:nth-last-child(1) {
   gap: 24px;
   height: 100%;
   overflow: hidden; // Prevent scrolling
+  padding: 20px;
+  align-items: stretch;
+  box-sizing: border-box; // Ensure padding doesn't cause overflow
 }
 
 .details-graph,
@@ -572,23 +653,29 @@ div[role="dialog"][aria-modal="true"]:nth-last-child(1) {
 }
 
 .back-button {
-  position: fixed;
-  top: 120px;
-  left: 20px;
-  z-index: 1000;
-  padding: 8px 16px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: background 0.2s ease;
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
 
   &:hover {
-    background: #2563eb;
+    background: rgba(59, 130, 246, 0.3);
+    color: #bfdbfe;
+    border-color: rgba(59, 130, 246, 0.5);
+    transform: translateX(-2px);
+  }
+
+  i {
+    font-size: 15px;
   }
 }
