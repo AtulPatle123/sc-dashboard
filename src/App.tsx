@@ -8,6 +8,19 @@ import './styles.css';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
+import { appConfig } from './config/app-config';
+import type {
+  AlertNotification,
+  AppScreen,
+  ChartPoint,
+  DashboardMetric,
+  DetailCard,
+  DetailNavKey,
+  MetricKey,
+  NotificationSeverity,
+  Point
+} from './models/dashboard';
+import { fetchDashboardMetrics } from './services/dashboard-metrics-api';
 import {
   Area,
   Bar,
@@ -24,134 +37,6 @@ import {
   XAxis,
   YAxis
 } from 'recharts';
-type MetricKey = 'SEMTECH' | 'ADS' | 'USM' | 'CMM';
-type DetailNavKey = 'healthCheckup' | 'monitoring' | 'SEMTECH' | 'xyz';
-type AppScreen = 'home' | 'details';
-type NotificationSeverity = 'ok' | 'warn' | 'down';
-type ChartKind = 'area' | 'bar' | 'line';
-
-type Point = {
-  month: string;
-  value: number;
-};
-
-type ChartPoint = Point & {
-  bestFit: number;
-};
-
-type DashboardMetric = {
-  key: MetricKey;
-  label: string;
-  valueLabel: string;
-  growth: string;
-  positive: boolean;
-  color: string;
-  secondaryColor: string;
-  chartKind: ChartKind;
-  chart: Point[];
-};
-
-type DetailCard = {
-  id: string;
-  title: string;
-  subtitle: string;
-  metricKey: MetricKey;
-};
-
-type AlertNotification = {
-  id: string;
-  title: string;
-  message: string;
-  severity: NotificationSeverity;
-  timestamp: string;
-};
-
-const fetchDashboardData = async (): Promise<DashboardMetric[]> => {
-  await new Promise((resolve) => setTimeout(resolve, 400));
-
-  return [
-    {
-      key: 'SEMTECH',
-      label: 'SEMTECH',
-      valueLabel: '350,897',
-      growth: '+6.9%',
-      positive: true,
-      color: '#4F46E5',
-      secondaryColor: '#06B6D4',
-      chartKind: 'area',
-      chart: [
-        { month: 'May', value: 120 },
-        { month: 'Jun', value: 148 },
-        { month: 'Jul', value: 132 },
-        { month: 'Aug', value: 176 },
-        { month: 'Sep', value: 162 },
-        { month: 'Oct', value: 210 },
-        { month: 'Nov', value: 198 },
-        { month: 'Dec', value: 244 }
-      ]
-    },
-    {
-      key: 'ADS',
-      label: 'New Users',
-      valueLabel: '2,356',
-      growth: '+2.1%',
-      positive: true,
-      color: '#9333EA',
-      secondaryColor: '#EC4899',
-      chartKind: 'bar',
-      chart: [
-        { month: 'May', value: 380 },
-        { month: 'Jun', value: 364 },
-        { month: 'Jul', value: 352 },
-        { month: 'Aug', value: 402 },
-        { month: 'Sep', value: 388 },
-        { month: 'Oct', value: 436 },
-        { month: 'Nov', value: 418 },
-        { month: 'Dec', value: 450 }
-      ]
-    },
-    {
-      key: 'USM',
-      label: 'USM',
-      valueLabel: '924',
-      growth: '+11.0%',
-      positive: true,
-      color: '#0EA5E9',
-      secondaryColor: '#14B8A6',
-      chartKind: 'line',
-      chart: [
-        { month: 'May', value: 58 },
-        { month: 'Jun', value: 72 },
-        { month: 'Jul', value: 69 },
-        { month: 'Aug', value: 98 },
-        { month: 'Sep', value: 90 },
-        { month: 'Oct', value: 118 },
-        { month: 'Nov', value: 111 },
-        { month: 'Dec', value: 132 }
-      ]
-    },
-    {
-      key: 'CMM',
-      label: 'CMM',
-      valueLabel: '49.65%',
-      growth: '-1.4%',
-      positive: false,
-      color: '#F97316',
-      secondaryColor: '#EF4444',
-      chartKind: 'line',
-      chart: [
-        { month: 'May', value: 44 },
-        { month: 'Jun', value: 46 },
-        { month: 'Jul', value: 47 },
-        { month: 'Aug', value: 52 },
-        { month: 'Sep', value: 51 },
-        { month: 'Oct', value: 56 },
-        { month: 'Nov', value: 53 },
-        { month: 'Dec', value: 50 }
-      ]
-    }
-  ];
-};
 
 const detailCardsByNav: Record<DetailNavKey, DetailCard[]> = {
   healthCheckup: [
@@ -258,9 +143,9 @@ const buildCompositionData = (selected: DashboardMetric | undefined, latestPoint
 };
 
 export const App = () => {
-  const { data = [], isLoading } = useQuery({
+  const { data = [], error, isError, isLoading } = useQuery<DashboardMetric[], Error>({
     queryKey: ['dashboard-metrics'],
-    queryFn: fetchDashboardData
+    queryFn: fetchDashboardMetrics
   });
 
   const [screen, setScreen] = useState<AppScreen>('home');
@@ -284,6 +169,7 @@ export const App = () => {
   const activeDetailCards = detailCardsByNav[activeDetailNav];
   const unreadAlerts = notifications.filter((item) => item.severity !== 'ok').length;
   const compositionData = useMemo(() => buildCompositionData(selected, latestPoint), [latestPoint, selected]);
+  const hasNoData = !isLoading && !isError && data.length === 0;
 
   useEffect(() => {
     if (!data.length || isGraphHovered || screen !== 'home') return;
@@ -366,7 +252,20 @@ export const App = () => {
         )}
       </AnimatePresence>
 
-      {screen === 'home' ? (
+      {isError ? (
+        <section className="overview-card">
+          <p className="overview-label">API Error</p>
+          <h2>Dashboard data unavailable</h2>
+          <p className="overview-subtitle">{error.message}</p>
+          <p className="overview-subtitle">Expected dashboard metrics from {appConfig.dashboardMetricsUrl}.</p>
+        </section>
+      ) : hasNoData ? (
+        <section className="overview-card">
+          <p className="overview-label">No Data</p>
+          <h2>No dashboard metrics returned</h2>
+          <p className="overview-subtitle">Expected the API to return a JSON array of dashboard metrics.</p>
+        </section>
+      ) : screen === 'home' ? (
         <>
           <section className="metrics-grid">
             {data.map((metric) => (
