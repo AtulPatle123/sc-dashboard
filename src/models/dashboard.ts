@@ -1,8 +1,8 @@
-export type MetricKey = 'SEMTECH' | 'ADS' | 'USM' | 'CMM';
-export type DetailNavKey = 'healthCheckup' | 'monitoring' | 'SEMTECH' | 'xyz';
-export type AppScreen = 'home' | 'details';
-export type NotificationSeverity = 'ok' | 'warn' | 'down';
-export type ChartKind = 'area' | 'bar' | 'line';
+export type MetricKey = "SEMTECH" | "ADS" | "USM" | "CMM";
+export type DetailNavKey = string;
+export type AppScreen = "home" | "details";
+export type NotificationSeverity = "ok" | "warn" | "down";
+export type ChartKind = "area" | "bar" | "line";
 
 export type Point = {
   month: string;
@@ -11,6 +11,30 @@ export type Point = {
 
 export type ChartPoint = Point & {
   bestFit: number;
+};
+
+export type Dependency = {
+  name: string;
+  status: string;
+};
+
+export type ModuleResponse = {
+  name: string;
+  status: string;
+  version: string;
+  noOfInstances: number;
+  dependencies: Dependency[];
+};
+
+export type PlatformHealth = {
+  platform: string;
+  overallStatus: string;
+  timestamp: string;
+  modules: string[];
+  modulesResponse: ModuleResponse[];
+  pushNotificationEligible: boolean;
+  telemetryPath: string;
+  logsDirectory: string;
 };
 
 export type DashboardMetric = {
@@ -23,6 +47,7 @@ export type DashboardMetric = {
   secondaryColor: string;
   chartKind: ChartKind;
   chart: Point[];
+  overallStatus: string;
 };
 
 export type DetailCard = {

@@ -269,3 +269,90 @@ div[role="dialog"][aria-modal="true"]:nth-last-child(1) {
   .modal-backdrop.show:nth-last-child(6){
     z-index: 1000;
   }
+
+.status-up {
+  color: #10B981;
+  font-weight: bold;
+}
+
+.status-warn {
+  color: #F59E0B;
+  font-weight: bold;
+}
+
+.status-down {
+  color: #EF4444;
+  font-weight: bold;
+}
+
+.module-details {
+  padding: 16px;
+}
+
+.module-details div {
+  margin-bottom: 8px;
+}
+
+.module-dependencies ul {
+  list-style: none;
+  padding: 0;
+}
+
+.module-dependencies li {
+  margin-bottom: 4px;
+}
+
+.service-status-display {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.status-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.status-circle.up {
+  background: linear-gradient(135deg, #10B981, #059669);
+}
+
+.status-circle.warn {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+}
+
+.status-circle.down {
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+}
+
+.status-details {
+  text-align: left;
+}
+
+.status-details h3 {
+  margin: 0 0 8px 0;
+  color: #1f294f;
+  font-size: 18px;
+}
+
+.status-details p {
+  margin: 4px 0;
+  color: #545c8a;
+  font-size: 14px;
+}
