@@ -1,7 +1,7 @@
 import React from "react";
 import { MetricsGrid } from "./MetricsGrid";
-import { HealthMetricsGraph } from "./HealthMetricsGraph";
 import { PlatformSummary } from "./PlatformSummary";
+import { ServicesList } from "./ServicesList";
 import type { PlatformHealth, MetricKey } from "../models/dashboard";
 
 interface HomeLayoutProps {
@@ -9,10 +9,7 @@ interface HomeLayoutProps {
   selected: PlatformHealth | undefined;
   activeMetric: string;
   isLoading: boolean;
-  isGraphHovered: boolean;
   onMetricClick: (platform: string) => void;
-  onGraphMouseEnter: () => void;
-  onGraphMouseLeave: () => void;
   onNavigateToDetails: (platform: string) => void;
 }
 
@@ -21,10 +18,7 @@ export const HomeLayout: React.FC<HomeLayoutProps> = ({
   selected,
   activeMetric,
   isLoading,
-  isGraphHovered,
   onMetricClick,
-  onGraphMouseEnter,
-  onGraphMouseLeave,
   onNavigateToDetails,
 }) => {
   return (
@@ -33,7 +27,9 @@ export const HomeLayout: React.FC<HomeLayoutProps> = ({
         data={data}
         activeMetric={activeMetric}
         onMetricClick={(platform) => onMetricClick(platform as MetricKey)}
-        onNavigateToDetails={(platform) => onNavigateToDetails(platform as MetricKey)}
+        onNavigateToDetails={(platform) =>
+          onNavigateToDetails(platform as MetricKey)
+        }
       />
 
       <section className="home-layout">
@@ -48,12 +44,7 @@ export const HomeLayout: React.FC<HomeLayoutProps> = ({
             </div>
           </div>
 
-          <HealthMetricsGraph
-            selected={selected}
-            isLoading={isLoading}
-            onMouseEnter={onGraphMouseEnter}
-            onMouseLeave={onGraphMouseLeave}
-          />
+          <ServicesList selected={selected} isLoading={isLoading} />
         </section>
 
         <PlatformSummary selected={selected} />

@@ -8,7 +8,12 @@ import "./styles.css";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { appConfig } from "./config/app-config";
-import type { AppScreen, MetricKey, PlatformHealth } from "./models/dashboard";
+import type {
+  AppScreen,
+  MetricKey,
+  PlatformHealth,
+  AlertNotification,
+} from "./models/dashboard";
 import { fetchDashboardMetrics } from "./services/dashboard-metrics-api";
 
 // Components
@@ -38,7 +43,6 @@ export const App = () => {
   });
 
   const [activeMetric, setActiveMetric] = useState<MetricKey>("SEMTECH");
-  const [isGraphHovered, setIsGraphHovered] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [screen, setScreen] = useState<AppScreen>("home");
   const [selectedModule, setSelectedModule] = useState<string>("");
@@ -47,19 +51,19 @@ export const App = () => {
     data.find((item) => item.platform === activeMetric) ?? data[0];
 
   const unreadAlerts = notifications.filter(
-    (item) => item.severity !== "ok",
+    (item: AlertNotification) => item.severity !== "ok",
   ).length;
   const hasNoData = !isLoading && !isError && data.length === 0;
 
   useEffect(() => {
-    if (!data.length || isGraphHovered) return;
+    if (!data.length || screen === "details") return;
 
     const interval = window.setInterval(() => {
       setActiveMetric((current) => getNextMetric(data, current, "next"));
     }, 5000);
 
     return () => window.clearInterval(interval);
-  }, [data, isGraphHovered]);
+  }, [data, screen]);
 
   const chartStyles = {
     "--accent": selected ? getStatusColor(selected.overallStatus) : "#6B7280",
@@ -110,17 +114,15 @@ export const App = () => {
                 selected={selected}
                 activeMetric={activeMetric}
                 isLoading={isLoading}
-                isGraphHovered={isGraphHovered}
                 onMetricClick={(platform) =>
                   setActiveMetric(platform as MetricKey)
                 }
-                onGraphMouseEnter={() => setIsGraphHovered(true)}
-                onGraphMouseLeave={() => setIsGraphHovered(false)}
                 onNavigateToDetails={(platform) => {
                   const selectedPlatform = data.find(
                     (item) => item.platform === platform,
                   );
                   setSelectedModule(selectedPlatform?.modules[0] || "");
+                  setActiveMetric(platform as MetricKey);
                   setScreen("details");
                 }}
               />
