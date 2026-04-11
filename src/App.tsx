@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import type { CSSProperties } from "react";
 
 import "./App.scss";
 import Header from "./components/header/header";
 import "./styles.css";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { appConfig } from "./config/app-config";
 import type {
@@ -20,7 +20,6 @@ import { fetchDashboardMetrics } from "./services/dashboard-metrics-api";
 import { HomeLayout } from "./components/HomeLayout";
 import { DetailsLayout } from "./components/DetailsLayout";
 import { DetailsKPIStrip } from "./components/DetailsKPIStrip";
-import { ModuleDetails } from "./components/ModuleDetails";
 import { NotificationsPanel } from "./components/NotificationsPanel";
 import { ErrorState, NoDataState } from "./components/StateComponents";
 
@@ -46,6 +45,7 @@ export const App = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [screen, setScreen] = useState<AppScreen>("home");
   const [selectedModule, setSelectedModule] = useState<string>("");
+  const [alertDismissed, setAlertDismissed] = useState(false);
 
   const selected =
     data.find((item) => item.platform === activeMetric) ?? data[0];
@@ -54,6 +54,33 @@ export const App = () => {
     (item: AlertNotification) => item.severity !== "ok",
   ).length;
   const hasNoData = !isLoading && !isError && data.length === 0;
+
+  // Find first DOWN service across all platforms for alert banner
+  const downAlert = !alertDismissed
+    ? data
+        .flatMap((p) =>
+          p.modulesResponse
+            .filter((m) => m.status === "DOWN")
+            .map((m) => ({ service: m.name, platform: p.platform, timestamp: p.timestamp }))
+        )
+        .concat(
+          data.flatMap((p) =>
+            p.modules
+              .filter((mod) =>
+                p.modulesResponse.some(
+                  (mr) =>
+                    mr.name.endsWith(mod) || mr.name === `sc-${mod}`,
+                ) === false && p.overallStatus === "DOWN"
+              )
+              .map(() => ({ service: "service", platform: p.platform, timestamp: p.timestamp }))
+          )
+        )[0]
+    : null;
+
+  // Use notification with "down" severity as fallback alert
+  const notifAlert = !alertDismissed
+    ? notifications.find((n: AlertNotification) => n.severity === "down")
+    : null;
 
   useEffect(() => {
     if (!data.length || screen === "details") return;
@@ -72,6 +99,21 @@ export const App = () => {
       : "#D1D5DB",
   } as CSSProperties;
 
+  const formatAlertTime = (ts: string) => {
+    try {
+      return new Date(ts).toLocaleString("en-US", {
+        month: "2-digit",
+        day: "2-digit",
+        year: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } catch {
+      return ts;
+    }
+  };
+
   return (
     <div>
       <Header />
@@ -83,24 +125,57 @@ export const App = () => {
             <h1>Service Health Center</h1>
           </div>
 
-          <button
-            className="notification-button"
-            onClick={() => setShowNotifications((current) => !current)}
-          >
-            <span className="notification-icon" aria-hidden>
-              🔔
-            </span>
-            <span>Notifications</span>
-            {unreadAlerts > 0 && (
-              <span className="notification-badge">{unreadAlerts}</span>
-            )}
-          </button>
+          <div className="notif-wrapper">
+            <button
+              className="notification-button"
+              onClick={() => setShowNotifications((current) => !current)}
+            >
+              <span className="notification-icon" aria-hidden>
+                🔔
+              </span>
+              <span>Notifications</span>
+              {unreadAlerts > 0 && (
+                <span className="notification-badge">{unreadAlerts}</span>
+              )}
+            </button>
+
+            <NotificationsPanel
+              isVisible={showNotifications}
+              notifications={notifications}
+            />
+          </div>
         </header>
 
-        <NotificationsPanel
-          isVisible={showNotifications}
-          notifications={notifications}
-        />
+        {/* Alert Banner */}
+        {(downAlert || notifAlert) && (
+          <div className="alert-banner">
+            <span className="alert-badge">down</span>
+            <div className="alert-content">
+              <span className="alert-title">
+                {downAlert
+                  ? `${downAlert.service} DOWN`
+                  : notifAlert?.title}
+              </span>
+              {downAlert && (
+                <span className="alert-timestamp">
+                  {" "}· {formatAlertTime(downAlert.timestamp)}
+                </span>
+              )}
+              <p className="alert-message">
+                {downAlert
+                  ? `Module ${downAlert.service} is DOWN on platform ${downAlert.platform}.`
+                  : notifAlert?.message}
+              </p>
+            </div>
+            <button
+              className="alert-dismiss"
+              onClick={() => setAlertDismissed(true)}
+              aria-label="Dismiss alert"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {isError ? (
           <ErrorState message={error?.message || "Unknown error occurred"} />
@@ -135,70 +210,10 @@ export const App = () => {
                 onModuleSelect={setSelectedModule}
                 onBackClick={() => setScreen("home")}
               >
-                <DetailsKPIStrip selected={selected} />
-
-                <section className="details-split-layout">
-                  <section className="overview-card details-graph">
-                    <div className="overview-header">
-                      <div>
-                        <p className="overview-label">
-                          Service Health Overview
-                        </p>
-                        <h2>{selected?.platform} Platform Status</h2>
-                        <p className="overview-subtitle">
-                          Real-time service health monitoring and status
-                          tracking.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="service-status-display">
-                      <div className="status-indicator">
-                        <div
-                          className={`status-circle ${selected?.overallStatus.toLowerCase()}`}
-                        >
-                          <span className="status-text">
-                            {selected?.overallStatus}
-                          </span>
-                        </div>
-                        <div className="status-details">
-                          <h3>Platform Status</h3>
-                          <p>
-                            Last updated:{" "}
-                            {selected?.timestamp
-                              ? new Date(selected.timestamp).toLocaleString()
-                              : "N/A"}
-                          </p>
-                          <p>Modules: {selected?.modules.length}</p>
-                          <p>
-                            Telemetry:{" "}
-                            <a
-                              href={selected?.telemetryPath}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              View Logs
-                            </a>
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </section>
-
-                  <section className="overview-card composition-card">
-                    <h3>Module Details</h3>
-                    <p className="overview-subtitle">
-                      Status and dependencies for{" "}
-                      {selectedModule || "selected module"}.
-                    </p>
-                    <div className="module-details">
-                      <ModuleDetails
-                        selected={selected}
-                        selectedModule={selectedModule}
-                      />
-                    </div>
-                  </section>
-                </section>
+                <DetailsKPIStrip
+                  selected={selected}
+                  selectedModule={selectedModule}
+                />
               </DetailsLayout>
             )}
           </>

@@ -9,6 +9,24 @@ interface DetailsLayoutProps {
   children: React.ReactNode;
 }
 
+/** Resolve the status for a module name against the modulesResponse array. */
+const resolveModuleStatus = (
+  module: string,
+  modulesResponse: PlatformHealth["modulesResponse"]
+): "UP" | "DOWN" | "WARN" => {
+  const mr = modulesResponse.find(
+    (m) =>
+      m.name === `sc-${module}` ||
+      m.name === module ||
+      m.name.endsWith(module) ||
+      module.endsWith(m.name.replace(/^sc-/, ""))
+  );
+  const s = mr?.status;
+  if (s === "DOWN") return "DOWN";
+  if (s === "WARN") return "WARN";
+  return "UP";
+};
+
 export const DetailsLayout: React.FC<DetailsLayoutProps> = ({
   selected,
   selectedModule,
@@ -16,28 +34,39 @@ export const DetailsLayout: React.FC<DetailsLayoutProps> = ({
   onBackClick,
   children,
 }) => {
+  const modulesResponse = selected?.modulesResponse ?? [];
+
   return (
     <div className="details-layout">
+      {/* ── Dark Sidebar ── */}
       <aside className="details-sidebar">
         <div className="sidebar-header">
           <button className="back-button" onClick={onBackClick}>
-            <i className="bi bi-arrow-left" aria-hidden="true"></i>
-            <span>Back</span>
+            <i className="bi bi-arrow-left" aria-hidden="true" />
+            <span>Back to Dashboard</span>
           </button>
         </div>
+
         <nav className="sidebar-nav">
-          {selected?.modules.map((module) => (
-            <button
-              key={module}
-              className={`sidebar-item ${selectedModule === module ? "active" : ""}`}
-              onClick={() => onModuleSelect(module)}
-            >
-              {module}
-            </button>
-          ))}
+          {selected?.modules.map((module) => {
+            const status = resolveModuleStatus(module, modulesResponse);
+            const isActive = selectedModule === module;
+            return (
+              <button
+                key={module}
+                className={`sidebar-item${isActive ? " active" : ""}`}
+                onClick={() => onModuleSelect(module)}
+                title={module}
+              >
+                <span className={`sidebar-status-dot dot-${status.toLowerCase()}`} />
+                <span className="sidebar-item-text">{module}</span>
+              </button>
+            );
+          })}
         </nav>
       </aside>
 
+      {/* ── Main Content ── */}
       <div className="details-content">{children}</div>
     </div>
   );
