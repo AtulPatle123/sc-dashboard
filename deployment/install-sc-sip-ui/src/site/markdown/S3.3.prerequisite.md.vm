@@ -1,0 +1,59 @@
+<h2> Component Dependencies
+</h2>
+
+If any, here is the list for every component that have to be installed before we proceed to the current component installation. 
+
+Note that if the list is empty, this means that this application component does not depend to any other applicative component.
+
+* S3 Bucket must be provisionned and provided with proper connection information
+* On Prod, CloudFront and DNS have been properly configure to web access the S3 Bucket 
+* On other env either CloudFront or RDITS HAProxy have been properly configure to web access the S3 Bucket 
+* Connection to S3 Bucket with connection information is succesfull
+ 
+<h2> Prerequisite requirement
+</h2>
+
+---------------------------------------
+
+Pre-requisite applicable for Aws S3 Installation
+
+
+On `[INSTALL_SERVER]`, ensure that the following requirement are fulfilled : 
+
+* Servers are properly installed with Centos 6.6 or +
+* Sevre can access Internet (with configure proxy or without proxy)
+* Current user can access in its PATH `aws` programm, which is installed via AWS CLI
+* Current user  execute Ssh command without tty. (cf how-to notes bellow on this topic). 
+
+
+**Until all those requirement are fulfilled, no further installation process shall be executed.**
+
+---------------------------------------
+
+**Notes**
+
+All those notes are applicable for DCES managed Servers.
+
+---------------------------------------
+
+*Note : Installing `aws` client*
+
+On DCES servers, `aws` client installation can be ensure via the su script `install_awscli` which is embbeded in the release.
+
+---------------------------------------
+
+*Note : Allow user to ssh without or without tty*
+
+All this is to be confiurged by within `visudo`, launched as root
+
+```shell
+# visudo
+```
+
+The following line bneed to be edited
+
+```
+#Defaults    requiretty
+
+
+```

@@ -1,0 +1,988 @@
+#!/bin/sh
+################################################################################
+#
+#         FILE: project_files/bin/check_functions
+#
+#        USAGE: project_files/bin/check_functions
+#
+#  DESCRIPTION: List of functions used by check scripts
+#
+#      OPTIONS: n/a
+#
+#        NOTES: 
+#
+#       AUTHOR: Serge Reboul
+#     DIVISION: Building & IT Business (former Partner Business)
+#      COMPANY: Schneider-Electric
+#===============================================================================
+
+################################################################################
+#  SECTION : SETENV FUNCTION 
+################################################################################
+#=== FUNCTION ================================================================
+# NAME: setenv
+# DESCRIPTION: load env variable located ./setenv 
+#=============================================================================
+function setenv()
+{
+   BASEDIR=$(dirname ${BASH_SOURCE[0]})
+   if [ -f ${BASEDIR}/setenv ]; then
+      . ${BASEDIR}/setenv
+   fi
+   
+   if [ -f ${BASEDIR}/setenv ]; then
+      log "Loading Env file ${BASEDIR}/setenv"  
+      . ${BASEDIR}/setenv
+   elif [ "${PROPERTIES_ALL_FILE}" != "" -a ! -f "${PROPERTIES_ALL_FILE}" ]; then
+      log "Loading Env file ${PROPERTIES_ALL_FILE}"
+      chmod +x ${PROPERTIES_ALL_FILE}
+      . ${PROPERTIES_ALL_FILE}
+   fi 
+   
+   if [ -z "${PROJECT_HOME}" ]; then
+      error "Environment variable (PROJECT_HOME) is not defined. It should be defined within env properties files."
+   fi
+}
+
+################################################################################
+#  SECTION : LOGGING FUNCTION 
+################################################################################
+
+#=== FUNCTION ================================================================
+# NAME: log
+# DESCRIPTION: Display log message unless 1st arguement is "-nolog"
+#=============================================================================
+function log() {
+   if [ "$1" != "-nolog" ]; then
+      echo $*
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: error
+# DESCRIPTION: raise an error, aka display error message and exit with response code  1
+#=============================================================================
+function error(){
+   if [ "$1" == "-nolog" ]; then
+      shift
+   fi 
+   echo "########################################################################"
+   echo "# Error : $*"
+   echo "########################################################################"
+   exit 1
+}
+
+#=== FUNCTION ================================================================
+# NAME: success
+# DESCRIPTION: display test success with Color tabulars
+#=============================================================================
+function success() {
+   echo -n $" - $*"
+   if [[ "${NO_COLOR}" != "-no-color" ]]; then
+      echo -en "\\033[120G"
+      echo -en "\\033[1;32m"
+   fi
+   echo $" [  OK  ]"
+   if [[ "${NO_COLOR}" != "-no-color" ]]; then
+      echo -en "\\033[0;39m"
+   fi
+   return 0
+}
+
+#=== FUNCTION ================================================================
+# NAME: failure
+# DESCRIPTION: display test failure with Color tabulars
+#=============================================================================
+function failure() {
+   echo -n $" - $*"
+
+   if [[ "${NO_COLOR}" != "-no-color" ]]; then
+      echo -en "\\033[120G"
+      echo -en "\\033[1;31m"
+   fi
+   echo $" [FAILED]"
+   if [[ "${NO_COLOR}" != "-no-color" ]]; then
+      echo -en "\\033[0;39m"
+   fi
+   return 1
+}
+
+#=== FUNCTION ================================================================
+# NAME: error_if_not_zero
+# DESCRIPTION: Test if $1 is 0 otherwise, exit with response $1
+#=============================================================================
+function error_if_not_zero() {
+   RC=$1
+   shift
+   if [ "${RC}" != "0" ]; then
+      echo "   # Error detected $*"
+      echo "   ###############################################################################"
+      export HAS_ERROR=${RC}
+      if [ -z "${CONTINUE}" -a "${CONTINUE}" != "-continue" ]; then
+         exit ${RC}
+      fi
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: exit_if_not_zero
+# DESCRIPTION: Test if $1 is 0 otherwise, exit with response $1
+#=============================================================================
+function exit_if_not_zero() {
+   error_if_not_zero $*
+}
+
+#=== FUNCTION ================================================================
+# NAME: warning_if_not_zero
+# DESCRIPTION: Test if $1 is 0 otherwise, set warning flag with response $1
+#=============================================================================
+function warning_if_not_zero() {
+   RC=$1
+   shift
+   if [ "${RC}" != "0" ]; then
+      echo "   ! Warning detected $*"
+      echo "   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+      export HAS_WARNING=${RC}
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: display_check_status
+# DESCRIPTION: Displa test status based on variable
+#=============================================================================
+function display_check_status() {
+
+   log "End of Checks. Status = "
+   if [[ ! -z "${HAS_WARNING}" && "${HAS_WARNING}" != "0" ]]; then 
+     log "- Warning detected while executing checks : Those don't prevent installation to be completed but they can explain why installation or application does not works as expected."
+   else
+     log "- No warning detected"
+   fi
+
+   if [[ ! -z "${HAS_ERROR}" && "${HAS_ERROR}" != "0" ]]; then 
+     log "-  Error detected while executing checks. Unless -ignore-checks flag is on, those will block the installation process and prevent we move further until those are solved."
+     if [ "${IGNORE_CHECKS}" == "-ignore-checks" ]; then 
+       log "   - Erros are ignored as -ignore-checks flag is on but still, don't expect installation or application to works."
+     else
+         exit $CHECK_RETURN_CODE
+     fi
+   else
+     log "- No error detected"
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: numerize_version
+# DESCRIPTION: convert tools version in numbre we can compare.
+#===============================================================================
+function numerize_version()
+{ 
+   echo "$@" | sed "s/_.*//g" | gawk -F. '{ printf("%03d%03d%03d\n", $1,$2,$3); }'; 
+}
+
+################################################################################
+#  SECTION : TESTING FUNCTION 
+################################################################################
+
+#=== FUNCTION ================================================================
+# NAME: assert_zero
+# DESCRIPTION: Check if $1 == 0 otherwise, display error message and exit with response code  1
+#=============================================================================
+function assert_zero()
+{
+   if [[ $1 -ne 0 ]]; then
+      shift
+      error "$*"
+   fi
+   return 0 
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_zero
+# Test if parameter $1 is true
+# Param 1 : parameter to check
+# Param 2 and next : check label
+#=============================================================================
+function check_zero()
+{
+   CODE=$1
+   shift
+   CHECK_NAME=$*
+
+   # Check input parameter
+   if [ "${CODE}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (CODE=${CODE}) is empty."
+      return 3
+   fi 
+
+   
+   if [ $CODE -ne 0 ];
+   then
+      failure ${CHECK_NAME}
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_not_zero
+# Test if parameter $1 is not equal to 0
+# Param 1 : parameter to check
+# Param 2 and next : check label
+#=============================================================================
+function check_not_zero()
+{
+   CODE=$1
+   shift
+   CHECK_NAME=$*
+
+   # Check input parameter
+   if [ "${CODE}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (CODE=${CODE}) is empty."
+      return 3
+   fi 
+
+   
+   if [ $CODE -eq 0 ];
+   then
+      failure ${CHECK_NAME}
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_condition
+# Test if parameter $1 is true
+# Param 1 : parameter to check
+# Param 2 and next : check label
+#=============================================================================
+function check_condition()
+{
+   CONDITION=$1
+   shift
+   CHECK_NAME=$*
+
+   # Check input parameter
+   if [ "${CONDITION}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (CONDITION=${CONDITION}) is empty."
+      return 3
+   fi 
+   
+   test $CONDITION 
+
+   if [[ $? -ne 0 ]];
+   then
+      failure ${CHECK_NAME}
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_version
+# Test if $1 and $2 are same version
+# Param 3 and next : check label
+#=============================================================================
+function check_version()
+{
+   VERSION=$1
+   BASE_VERSION=$2
+   shift
+   shift
+   CHECK_NAME=$*
+
+   # Check input parameter
+   if [ "${VERSION}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (VERSION=${VERSION}) is empty."
+      return 3
+   fi 
+   if [ "${BASE_VERSION}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$2 (BASE_VERSION=${BASE_VERSION}) is empty."
+      return 3
+   fi 
+   
+   if [[ "${VERSION}" == "${BASE_VERSION}*" ]];
+   then
+      failure ${CHECK_NAME}
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_version
+# Test if $1 >= $2 as version
+# Param 3 and next : check label
+#=============================================================================
+function check_version_superior()
+{
+   VERSION=`numerize_version $1`
+   BASE_VERSION=`numerize_version $2`
+   shift
+   shift
+   CHECK_NAME=$*
+
+   # Check input parameter
+   if [ "${VERSION}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (VERSION=${VERSION}) is empty."
+      return 3
+   fi 
+   if [ "${BASE_VERSION}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$2 (BASE_VERSION=${BASE_VERSION}) is empty."
+      return 3
+   fi 
+   
+   if [[ $((10#$VERSION)) -lt $((10#$BASE_VERSION)) ]];
+   then
+      failure ${CHECK_NAME}
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_current_user
+# Test if $1 is current user
+# Param 2 and next : check label
+#=============================================================================
+function check_current_user()
+{
+   USERNAME=$1
+   CHECK_NAME="Current shell user is ${USERNAME}"
+
+   # Check input parameter
+   if [ "${USERNAME}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (USERNAME=${USERNAME}) is empty."
+      return 3
+   fi 
+
+   OUT=`whoami`
+   if [ "${OUT}" != "${USERNAME}" ];
+   then
+      failure ${CHECK_NAME}
+      log "Current shell user is not ${USER_NAME}"
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_dir_RWX_rights_for_user
+# Test if user $2 has RWX rigth on $1
+# Param 3 and next : check label
+#=============================================================================
+function check_dir_RWX_rights_for_user()
+{
+   DIR=$1
+   USERNAME=$2
+   CHECK_NAME="${DIR} exists and is owned by ${USERNAME}"
+
+   # Check input parameter
+   if [ "${DIR}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (DIR=${DIR}) is empty."
+      return 3
+   fi 
+   
+   # Check if DIR exists
+   if [ ! -d "${DIR}" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Directory \$1 (DIR=${DIR}) does tno exists."
+      return 1
+   elif [ ! -r "${DIR}" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : User ${USER_NAME} don't have read rights on directory \$1 (DIR=${DIR})."
+      return 1
+   elif [ ! -w "${DIR}" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : User ${USER_NAME} don't have write rights on directory \$1 (DIR=${DIR})."
+      return 1
+   elif [ ! -x "${DIR}" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : User ${USER_NAME} don't have execution rights on directory \$1 (DIR=${DIR})."
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_command_in_path
+# Test if command $1 is in PATH
+# Param 2 and next : check label
+#=============================================================================
+function check_command_in_path()
+{
+   CMD=$1
+   CHECK_NAME="${CMD} is reachable in PATH"
+
+   # Check input parameter
+   if [ "${CMD}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (CMD=${CMD}) does not referecne a command."
+      return 3
+   fi 
+
+   OUT=`type -p "${CMD}"`
+   if [ "$OUT" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Command [${CMD}] is not accessible in PATH"
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_command_in_path
+# Test if command $1 is in PATH
+# Param 2 and next : check label
+#=============================================================================
+function check_command_in_path()
+{
+   CMD=$1
+   CHECK_NAME="${CMD} is reachable in PATH"
+
+   # Check input parameter
+   if [ "${CMD}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (CMD=${CMD}) does not referecne a command."
+      return 3
+   fi 
+
+   OUT=`type -p "${CMD}"`
+   if [ "$OUT" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Command [${CMD}] is not accessible in PATH"
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+
+#=== FUNCTION ================================================================
+# NAME: check_command_in_path
+# Test if command $1 is in PATH
+# Param 2 and next : check label
+#=============================================================================
+function check_command_in_path()
+{
+   CMD=$1
+   CHECK_NAME="${CMD} is reachable in PATH"
+
+   # Check input parameter
+   if [ "${CMD}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (CMD=${CMD}) does not referecne a command."
+      return 3
+   fi 
+
+   OUT=`type -p "${CMD}"`
+   if [ "$OUT" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Command [${CMD}] is not accessible in PATH"
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_command_is_ok
+# Exec $* and check if its return code is null
+#=============================================================================
+function check_command_is_ok()
+{
+   CMD=$*
+   CHECK_NAME="${CMD} can be executed without error"
+
+   # Check input parameter
+   if [ "${CMD}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (CMD=${CMD}) does not referecne a command."
+      return 3
+   fi 
+
+   ${CMD} &> /dev/null
+   if [[ $? -ne 0 ]];
+   then
+      failure ${CHECK_NAME}
+      log "Command [${CMD}] is executed with errors"
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_runas_command_is_ok
+# Exec sudo -u $1 a command and check if its return code is null
+# Param 1 : user to runas
+# Param < 1 : command
+#=============================================================================
+function check_runas_command_is_ok()
+{
+   CURRENT_USER=`whoami`
+   USER=$1
+   shift
+   CMD="$*"
+   CHECK_NAME="${CMD} can be executed as ${USER} without error"
+   RC=0
+   
+   if [ "${CURRENT_USER}" == "${USER}" ]; then
+      ${CMD} 2>&1 /dev/null
+      RC=$?
+   else
+      sudo -u ${USER} -n ${CMD} >& /dev/null
+      RC=$?
+   fi 
+
+   if [[ $RC -ne 0 ]];
+   then
+      failure ${CHECK_NAME}
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_port_listening
+# Check if port $1 is listening on sevrer
+# Param 2 and next : check label
+#=============================================================================
+function check_port_listening()
+{
+   MAX_TIME=30
+   PORT=$1
+   TIMEOUT=$2
+   CHECK_NAME="Launched Program listen on port [${PORT}]"
+
+   # Check input parameter
+   if [ "${PORT}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (PORT=${PORT}) does not referecne a tcp port."
+      return 3
+   fi 
+
+   # Check input parameter
+   if [ "${TIMEOUT}" != "" ];
+   then
+      MAX_TIME=${TIMEOUT}
+   fi 
+
+   SUCCESS=0
+
+   # wait max 30 second for port to listen
+   COUNTER=0
+   IS_STOP=0
+   while [  $COUNTER -lt ${MAX_TIME} -a $IS_STOP -eq 0 ]; 
+   do
+      OUT=`/usr/sbin/ss -ntpl 2>&1 | grep ":${PORT} "`
+      if [ "$OUT" == "" ];
+      then
+         SUCCESS=0
+         IS_STOP=0
+         sleep 1
+      else
+         SUCCESS=1
+         IS_STOP=1
+      fi
+      let COUNTER=COUNTER+1 
+   done
+
+   if [ $SUCCESS -ne 1 ];
+   then
+      failure ${CHECK_NAME}
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_http_get_return_something
+# Check if url $1 return something
+# Param 2 and next : check label
+#=============================================================================
+function check_http_get_return_something()
+{
+   URL=$1
+   shift
+   PARAM=$*
+   CHECK_NAME="${URL} answer with a Http return code"
+
+   # Check input parameter
+   if [ "${URL}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (URL=${URL}) is not provided."
+      return 3
+   fi 
+
+   if [ "${RC}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$2 (RC=${RC}) is not provided."
+      return 3
+   fi 
+
+   URL_RC=`wget -t 1 -T 60 -S -qO- ${PARAM} ${URL} 2>&1 | grep "HTTP/" | awk '{print $2}'`
+   if [ "${URL_RC}" != "" ]; then
+      success ${CHECK_NAME}
+      CHECK_RC=0
+   else
+      failure ${CHECK_NAME}
+      log "$URL return without any return code"
+      CHECK_RC=${RC}
+   fi
+   return ${CHECK_RC}
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_http_get_return_code
+# Check if url $1 answer with return code $2 
+# Param 3 and next : HTTP parameters
+#=============================================================================
+function check_http_get_return_code()
+{
+   URL=$1
+   RC=$2
+   shift
+   shift
+   PARAM=$*
+   CHECK_NAME="${URL} answer with ${RC} code"
+
+   # Check input parameter
+   if [ "${URL}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (URL=${URL}) is not provided."
+      return 3
+   fi 
+
+   if [ "${RC}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$2 (RC=${RC}) is not provided."
+      return 3
+   fi 
+
+   URL_RC=`wget -t 1 -T 60 -S -qO- ${PARAM} ${URL} 2>&1 | grep "HTTP/" | awk '{print $2}'`
+   if [ "${URL_RC}" == "${RC}" ]; then
+      success ${CHECK_NAME}
+      CHECK_RC=0
+   else
+      failure ${CHECK_NAME}
+      log "$URL return with return code ${URL_RC} (!=${RC})"
+      CHECK_RC=${RC}
+   fi
+   return ${CHECK_RC}
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_http_get_ok
+# Check if url $1 answer with return code OK
+# Param 2 and next : HTTP parameters
+#=============================================================================
+function check_http_get_ok()
+{
+   URL=$1
+   shift
+   PARAM=$*
+   CHECK_NAME="${URL} is reached"
+
+   # Check input parameter
+   if [ "${URL}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (URL=${URL}) is not provided."
+      return 3
+   fi 
+
+   OUT=`wget -t 1 -T 60 -S -qO- ${PARAM} ${URL} 2>&1`
+   RC=$?
+   if [ ${RC} -eq 0 ]; then
+      success ${CHECK_NAME}
+      CHECK_RC=0
+   elif [ ${RC} -eq 1 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 1 : Generic error code)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 2 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 2 : Parse error)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 3 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 3 : File I/O error)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 4 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 4 : Network failure)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 5 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 5 : SSL verification failure)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 6 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 6 : Username/password authentication failure)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 7 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 7 : Protocol errors)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 8 ]; then
+      echo "DEBUG : wget --spider -S -qO- ${PARAM} ${URL}"
+      wget -t 1 -T 60 --spider -S -qO- ${PARAM} ${URL} | sed "s/^/DEBUG: /g"
+      ERROR_CODE=`wget -t 1 -T 60 --spider -S -qO- ${PARAM} ${URL} | grep "HTTP/" | awk '{print $2}'`
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 8 : Server issued an error response ${ERROR_CODE})"
+      CHECK_RC=${RC}
+   else
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code ${RC})"
+      CHECK_RC=${RC}
+   fi
+   return ${CHECK_RC}
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_http_post_json_ok
+# Check if http post on url $1 with Json $2 answer with return code OK
+#=============================================================================
+function check_http_post_json_ok()
+{
+   URL=$1
+   JSON=$2
+   CHECK_NAME="${URL} POST is reached"
+
+   # Check input parameter
+   if [ "${URL}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$1 (URL=${URL}) is not provided."
+      return 3
+   fi 
+   if [ "${JSON}" == "" ];
+   then
+      failure ${CHECK_NAME}
+      log "Error : Parameter \$2 (JSON=${JSON}) is not provided."
+      return 3
+   fi 
+
+   OUT=`wget -t 1 -T 60 -S -q --header="Content-Type: application/json" --post-data "${JSON}" ${URL} 2>&1`
+   RC=$?
+   if [ ${RC} -eq 0 ]; then
+      success ${CHECK_NAME}
+      CHECK_RC=0
+   elif [ ${RC} -eq 1 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 1 : Generic error code)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 2 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 2 : Parse error)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 3 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 3 : File I/O error)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 4 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 4 : Network failure)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 5 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 5 : SSL verification failure)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 6 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 6 : Username/password authentication failure)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 7 ]; then
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 7 : Protocol errors)"
+      CHECK_RC=${RC}
+   elif [ ${RC} -eq 8 ]; then
+      echo "DEBUG : wget --spider -S -qO- ${PARAM} ${URL}"
+      wget -t 1 -T 60 --spider -S -qO- ${PARAM} ${URL} | sed "s/^/DEBUG: /g"
+      ERROR_CODE= `wget -t 1 -T 60 --spider -S -qO- ${PARAM} ${URL} | grep "HTTP/" | awk '{print $2}'`
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code 8 : Server issued an error response ${ERROR_CODE})"
+      CHECK_RC=${RC}
+   else
+      failure ${CHECK_NAME}
+      log "Impossible to access $URL (wget error code ${RC})"
+      CHECK_RC=${RC}
+   fi
+   return ${CHECK_RC}
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_mysqldb_is_on
+# Test if DB is accessible
+# Param 1 : DB Host
+# Param 2 : DB Port
+# Param 3 : DB Username
+# Param 4 : DB Password
+# Param 5 : Schema
+# Param 6 (facultative) : -nolog -> Don't display any logs
+#=============================================================================
+function check_mysqldb_is_on()
+{
+   TEST_DB_HOST=$1
+   TEST_DB_PORT=$2
+   TEST_DB_USER=$3
+   TEST_DB_PASSWORD=$4
+   CHECK_NAME="mysql://${TEST_DB_USER}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_SCHEMA} is on"
+
+   # Check input parameter
+   if [ -z "${TEST_DB_HOST}" ]; then
+      failure ${CHECK_NAME}
+      log "Function Parameter \$1 (DB_HOST) is not defined. "
+      return 3
+   fi
+   if [ -z "${TEST_DB_PORT}" ]; then
+      failure ${CHECK_NAME}
+      log  "Function Parameter \$2 (DB_PORT) is not defined. "
+      return 3
+   fi
+   if [ -z "${TEST_DB_USER}" ]; then
+      failure ${CHECK_NAME}
+      log  "Function Parameter \3 (DB_USER) is not defined. "
+      return 3
+   fi
+   if [ -z "${TEST_DB_PASSWORD}" ]; then
+      failure ${CHECK_NAME}
+      log  "Function Parameter \$4 (DB_PASSWORD) is not defined. "
+      return 3
+   fi
+   
+   OUT=`echo "status;" | mysql --host ${TEST_DB_HOST} --port=${TEST_DB_PORT} --user=${TEST_DB_USER} --password=${TEST_DB_PASSWORD} 2>&1`
+   RC=$?
+   if [ ${RC} -ne 0 ]; then
+      failure ${CHECK_NAME}
+      log "MySQL DB [${TEST_DB_HOST}:${TEST_DB_PORT}] is not accessible (${OUT})"
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi   
+}
+
+#=== FUNCTION ================================================================
+# NAME: check_mysqldb_schema
+# Test if DB is accessible and have specific schema 
+# Param 1 : DB Host
+# Param 2 : DB Port
+# Param 3 : DB Username
+# Param 4 : DB Password
+# Param 5 : Schema
+# Param 6 (facultative) : -nolog -> Don't display any logs
+#=============================================================================
+function check_mysqldb_schema()
+{
+   TEST_DB_HOST=$1
+   TEST_DB_PORT=$2
+   TEST_DB_USER=$3
+   TEST_DB_PASSWORD=$4
+   TEST_DB_SCHEMA=$5
+   CHECK_NAME="mysql://${TEST_DB_USER}@${TEST_DB_HOST}:${TEST_DB_PORT}/${TEST_DB_SCHEMA} is reachable from server"
+
+   # Check input parameter
+   if [ -z "${TEST_DB_HOST}" ]; then
+      failure ${CHECK_NAME}
+      log "Function Parameter \$1 (DB_HOST) is not defined. "
+      return 3
+   fi
+   if [ -z "${TEST_DB_PORT}" ]; then
+      failure ${CHECK_NAME}
+      log  "Function Parameter \$2 (DB_PORT) is not defined. "
+      return 3
+   fi
+   if [ -z "${TEST_DB_USER}" ]; then
+      failure ${CHECK_NAME}
+      log  "Function Parameter \3 (DB_USER) is not defined. "
+      return 3
+   fi
+   if [ -z "${TEST_DB_PASSWORD}" ]; then
+      failure ${CHECK_NAME}
+      log  "Function Parameter \$4 (DB_PASSWORD) is not defined. "
+      return 3
+   fi
+   if [ -z "${TEST_DB_SCHEMA}" ]; then
+      failure ${CHECK_NAME}
+      log  "Function Parameter \$4 (DB_SCHEMA) is not defined. "
+      return 3
+   fi
+   
+   OUT=`mysqlshow --host ${TEST_DB_HOST} --port=${TEST_DB_PORT} --user=${TEST_DB_USER} --password=${TEST_DB_PASSWORD} 2>&1`
+   RC=$?
+   if [ ${RC} -ne 0 ]; then
+      failure ${CHECK_NAME}
+      log "MySQL DB [${TEST_DB_HOST}:${TEST_DB_PORT}] is not accessible (${OUT})"
+      return 1
+   fi   
+   
+   NB=`echo $OUT | grep "${TEST_DB_SCHEMA}"`
+   if [ "$NB" == "" ]; then
+      failure ${CHECK_NAME}
+      log "MySQL DB [${TEST_DB_HOST}:${TEST_DB_PORT}] doesn't have any schema ${TEST_DB_SCHEMA}"
+      return 1
+   else
+      success ${CHECK_NAME}
+      return 0
+   fi
+}

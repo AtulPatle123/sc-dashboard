@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.schneiderelectric.dces.sip</groupId>
+    <artifactId>sc-sip-ui-parent</artifactId>
+    <version>1.2.0</version>
+  </parent>
+
+  <!-- Note that this file will be filtered during archetype packaging -->
+  <!-- If you want to defnie a variable in the target pom.xml file, esace the dolllar char by '\', otherwise Var will be substitute. -->
+  <groupId>com.schneiderelectric.dces.sip</groupId>
+  <artifactId>install-sc-sip-ui</artifactId>
+  <packaging>pom</packaging>
+
+  <properties>
+    <timestamp>${maven.build.timestamp}</timestamp>
+    <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+    <project.build.binary_archive>Selector-Information-Portal</project.build.binary_archive>
+    <project.build.doc_archive>sc-sip-ui-doc-${project.version}</project.build.doc_archive>
+    <project.build.source_archive>sc-sip-ui-sources-${project.version}</project.build.source_archive>
+    <!-- This link is used in order to complet the application release notes. Edit it if the repository used is not dces -->
+    <artifactory.base.dir>https://jfrog-euw.se.com/artifactory/em-dces-selectconfig-release-maven-fed/</artifactory.base.dir>
+    <maven.deploy.skip>false</maven.deploy.skip>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.schneiderelectric.dces.tool</groupId>
+      <artifactId>install-tool-scripts</artifactId>
+      <version>1.9.33</version>
+      <type>tar.gz</type>
+    </dependency>
+    <!-- Add here dependencies to current project binaries -->
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>sc-sip-ui</artifactId>
+      <version>${project.version}</version>
+      <type>zip</type>
+    </dependency>
+
+  </dependencies>
+
+  <!--
+    Requirement on parent pom to e'nsure proper build and relese mgmt.
+    * Maven parent pom defined the SCM Url within /project/scm/ tag
+    * Maven parent pom must defined a property named project.scm.id
+      For BitBucket DCES_CI account, id is usually : bitbucket-ci
+      For RDITS CI account, id is usually : rdits-ci
+    * Maven global settgins (in file ~/.m2/settings.xml) must defined a server credentials for property named project.scm.id
+    * Maven must properly declare Distribution URL and access
+    * Maven parent pom must defined the Distribution Url within /project/distributionManagement/ tag
+    * Maven global settings (in file ~/.m2/settings.xml) must defined a server credentials for distribution repository
+    * Maven parent pom must set of scm value to avoid scm plugin old issue via :
+      build/pluginManagement/plugins/plugin : org.apache.maven.plugins:maven-scm-plugin:1.9.4, with dependencies/dependency : org.apache.maven.scm:maven-scm-provider-gitexe:1.9.4
+      build/pluginManagement/plugins/plugin : org.apache.maven.plugins:maven-release-plugin:2.5.2, with dependencies/dependency : org.apache.maven.scm:maven-scm-provider-gitexe:1.9.4
+                                                                                                   with configuration.localCheckout = true
+                                                                                                   with autoVersionSubmodules = true
+    * Maven parent include severals repositories
+      pace-repository          : release  : http://10.155.34.21:8081/artifactory/websdk-release-local
+      pace-snapshot-repository : snapshot : http://10.155.34.21:8081/artifactory/websdk-snapshot-local
+      dces-repository          : release  : http://10.155.34.21:8081/artifactory/dces-release-local
+      dces-snapshot-repository : snapshot : http://10.155.34.21:8081/artifactory/dces-snapshot-local
+      central: all : http://repo1.maven.org/maven2
+  -->
+
+  <build>
+    <plugins>
+
+      <!-- Offer pugin to configure the project -->
+      <plugin>
+        <groupId>org.codehaus.gmaven</groupId>
+        <artifactId>groovy-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>configure_install_project</id>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <scriptpath>
+                 <path>${basedir}/src/main/groovy</path>
+              </scriptpath>
+              <source>def scip = new script_configure_install_project("${basedir}") ;</source>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Generate Httpd Certificates via openssl-->
+      <plugin>
+         <artifactId>maven-antrun-plugin</artifactId>
+         <version>1.7</version>
+         <executions>
+            <execution>
+               <id>generate-httpd-certificates</id>
+               <goals>
+                  <goal>run</goal>
+               </goals>
+               <configuration>
+                  <!--target name="generate-httpd-certificates">
+                     <echo>Generate Certificate Key with fake password</echo>
+                     <exec executable="cmd" dir="${project.basedir}/src/main/resources/httpd_files/certificates/" osfamily="windows" failonerror="true">
+                        <arg line="/c openssl genrsa -aes256 -passout pass:xxxxxxxxxx -out sc-dashboard-ui.server.key 2048 -noout" />
+                     </exec>
+
+                     <exec executable="openssl" dir="${project.basedir}/src/main/resources/httpd_files/certificates/" osfamily="unix" failonerror="true">
+                        <arg line="genrsa -aes256 -passout pass:xxxxxxxxxx -out sc-dashboard-ui.server.key 2048 -noout" />
+                     </exec>
+
+                     <echo>Removing fake password to Certificate Key</echo>
+                     <exec executable="cmd" dir="${project.basedir}/src/main/resources/httpd_files/certificates/" osfamily="windows" failonerror="true">
+                        <arg line="/c openssl rsa -in sc-dashboard-ui.server.key -passin pass:xxxxxxxxxx -out sc-dashboard-ui.server.key" />
+                     </exec>
+                     <exec executable="openssl" dir="${project.basedir}/src/main/resources/httpd_files/certificates/" osfamily="unix" failonerror="true">
+                        <arg line="rsa -in sc-dashboard-ui.server.key -passin pass:xxxxxxxxxx -out sc-dashboard-ui.server.key " />
+                     </exec>
+
+                     <echo>Generate Certificate Server Request</echo>
+                     <exec executable="cmd" dir="${project.basedir}/src/main/resources/httpd_files/certificates/" osfamily="windows" failonerror="true">
+                        <arg line="/c openssl req -new -key sc-dashboard-ui.server.key -outsc-dashboard-ui.server.csr -subj '/C=FR/ST=Hauts de Seine/L=Rueil Malmaison/O=Schneider Electric Industries SAS/OU=DCE/CN=sc-dashboard-ui.autosigned.dces.schneider-electric.cn/emailAddress=global.dnsadmin@eud.schneider-electric.com'" />
+                     </exec>
+                     <exec executable="openssl" dir="${project.basedir}/src/main/resources/httpd_files/certificates/" osfamily="unix" failonerror="true">
+                        <arg line="req -new -key sc-dashboard-ui.server.key -out sc-dashboard-ui.server.csr -subj '/C=FR/ST=Hauts de Seine/L=Rueil Malmaison/O=Schneider Electric Industries SAS/OU=DCE/CN=sc-dashboard-ui.autosigned.dces.schneider-electric.cn/emailAddress=global.dnsadmin@eud.schneider-electric.com' " />
+                     </exec>
+
+                     <echo>Generate autosigned Certificate</echo>
+                     <exec executable="cmd" dir="${project.basedir}/src/main/resources/httpd_files/certificates/" osfamily="windows" failonerror="true">
+                        <arg line="/c openssl x509 -req -days 3650 -in sc-dashboard-ui.server.csr -signkey sc-dashboard-ui.server.key -out sc-dashboard-ui.server.crt" />
+                     </exec>
+                     <exec executable="openssl" dir="${project.basedir}/src/main/resources/httpd_files/certificates/" osfamily="unix" failonerror="true">
+                        <arg line="x509 -req -days 3650 -in sc-dashboard-ui.server.csr -signkey sc-dashboard-ui.server.key -out sc-dashboard-ui.server.crt" />
+                     </exec>
+
+                     <condition property="cmdsuccess">
+                        <and>
+                           <available file="${project.basedir}/src/main/resources/httpd_files/certificates/sc-dashboard-ui.server.key" />
+                           <available file="${project.basedir}/src/main/resources/httpd_files/certificates/sc-dashboard-ui.server.crt" />
+                        </and>
+                     </condition>
+                     <fail unless="cmdsuccess" />
+                  </target-->
+               </configuration>
+            </execution>
+         </executions>
+      </plugin>
+
+      <!-- Offer project have been properly configured -->
+      <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-enforcer-plugin</artifactId>
+         <version>1.4.1</version>
+         <executions>
+            <execution>
+               <id>enforce-project-properlly-configured</id>
+               <phase>validate</phase>
+               <goals>
+                  <goal>enforce</goal>
+               </goals>
+               <configuration>
+                  <rules>
+                     <requireFilesExist>
+                        <files>
+                           <file>${basedir}/.is_configured</file>
+                           <file>${basedir}/.is_configured</file>
+                           <file>${basedir}/.is_configured</file>
+                        </files>
+                        <message># #
+# Error : com.schneiderelectric.dces:install-sc-dashboard-ui is not properly configure
+# - To configure the project execute :
+#         mvn org.codehaus.groovy.maven:gmaven-plugin:execute@configure_install_project
+#
+# - To configure the project and generate httpd autosigned certificate execute :
+#         mvn org.apache.maven.plugins:maven-antrun-plugin:run@generate-httpd-certificates org.codehaus.groovy.maven:gmaven-plugin:execute@configure_install_project
+#
+#</message>
+                     </requireFilesExist>
+                  </rules>
+                  <fail>true</fail>
+               </configuration>
+            </execution>
+         </executions>
+      </plugin>
+
+      <!-- Ensure install bundle checks and generate var to build up release note-->
+      <plugin>
+        <groupId>org.codehaus.gmaven</groupId>
+        <artifactId>groovy-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>set_project_properties</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <scriptpath>
+                 <path>${basedir}/src/main/groovy</path>
+              </scriptpath>
+              <source>def sspp = new script_set_project_properties(project.properties, "${artifactory.base.dir}", "${project.groupId}", "${project.artifactId}", "${project.version}" )</source>
+            </configuration>
+          </execution>
+          <execution>
+            <id>check_installation_folder</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <source>${basedir}/src/main/groovy/script_check_installation_folder.groovy</source>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+
+
+      <!-- Retreive dependencies -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <!-- unpack install-script in target/scripts/ -->
+          <execution>
+            <id>unpack-dependencies</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <configuration>
+              <includeArtifactIds>install-tool-scripts</includeArtifactIds>
+              <outputDirectory>${project.build.directory}/scripts/</outputDirectory>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <excludeArtifactIds>install-tool-scripts</excludeArtifactIds>
+              <outputDirectory>${project.build.directory}/binaries/</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Check that every required external file (out of dependency list) are present in expected folder structure -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.4.1</version>
+        <executions>
+          <execution>
+            <id>enforce-files-exist</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireFilesExist>
+                  <files>
+                    <!-- ok, this file is useless, but we need at least one file and this one exist -->
+                    <file>${basedir}/pom.xml</file>
+
+                    <!-- Extend here the lsit with all the file you need to rely on so that you can fail if you don't find them out -->
+                    </files>
+                    <message>#
+# Error : com.schneiderelectric.dces:install-sc-dashboard-ui defines mandatoryy files that are missing
+#</message>
+                </requireFilesExist>
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Generate Application Installation Doc web Site -->
+      <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-site-plugin</artifactId>
+          <version>3.7.1</version>
+         <executions>
+            <execution>
+               <id>installation_guide_html</id>
+               <phase>package</phase>
+               <goals>
+                  <goal>site</goal>
+               </goals>
+            </execution>
+         </executions>
+      </plugin>
+
+      <!-- Compose Assenbly to build doc and release bianryes -->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.4.1</version>
+        <executions>
+          <execution>
+            <id>make-assembly-install-package</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>${project.build.binary_archive}</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+              <attach>false</attach>
+              <descriptors>
+                <descriptor>src/assembly/assembly-install.xml</descriptor>
+              </descriptors>
+              <archiverConfig>
+                <directoryMode>0755</directoryMode>
+                <defaultDirectoryMode>0755</defaultDirectoryMode>
+                <fileMode>0755</fileMode>
+              </archiverConfig>
+            </configuration>
+          </execution>
+          <execution>
+            <id>make-assembly-doc-package</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>${project.build.doc_archive}</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+              <attach>false</attach>
+              <descriptors>
+                <descriptor>src/assembly/assembly-doc.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Defnie Assenbly archives as Artifact to push them in Artifactory -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.9.1</version>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.build.directory}/${project.build.binary_archive}.tar.gz</file>
+                  <type>tar.gz</type>
+                </artifact>
+                <artifact>
+                  <file>${project.build.directory}/${project.build.doc_archive}.tar.gz</file>
+                  <type>tar.gz</type>
+                  <classifier>doc</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+         <artifactId>maven-antrun-plugin</artifactId>
+         <version>1.7</version>
+         <executions>
+            <execution>
+               <id>deploy_on_S3</id>
+               <configuration>
+                  <target name="run_install">
+
+                     <property name="ant_install_env" value="${install.env}" />
+                     <fail message=" --- Parameter 'install.env' is not defined. No possible installation execution. Set it ut with -Dinstall.env={ci|sqe|ppr|prod} --- ">
+                        <condition>
+                           <or>
+                              <equals arg1="${ant_install_env}" arg2="" />
+                              <equals arg1="${ant_install_env}" arg2="$${install.env}" />
+                           </or>
+                        </condition>
+                     </fail>
+
+                     <echo>============================================================</echo>
+                     <echo>Extract produced TGZ</echo>
+                     <exec executable="rm" dir="target" osfamily="unix" failonerror="false">
+                        <arg line=" -f &quot;${project.build.binary_archive}&quot;" />
+                     </exec>
+                     <exec executable="tar" dir="target" osfamily="unix" failonerror="true">
+                        <arg line=" xzf &quot;${project.build.binary_archive}.tar.gz&quot;" />
+                     </exec>
+
+                     <echo>============================================================</echo>
+                     <echo>Run Install script for env ${install.env}</echo>
+                     <exec executable="./install.sh" dir="target/${project.build.binary_archive}" osfamily="unix" resultproperty="cmdresult">
+                        <arg line=" ${install.env}" />
+                     </exec>
+
+                     <condition property="cmdsuccess">
+                        <equals arg1="${cmdresult}" arg2="0" />
+                     </condition>
+                     <fail unless="cmdsuccess" />
+                  </target>
+               </configuration>
+               <goals>
+                  <goal>run</goal>
+               </goals>
+            </execution>
+         </executions>
+      </plugin>
+
+      <!-- Print messagde once installation bunlde is built -->
+      <plugin>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <executions>
+              <execution>
+                  <phase>install</phase>
+                  <goals>
+                      <goal>run</goal>
+                  </goals>
+                  <configuration>
+                      <tasks>
+                          <echo>#
+# Project com.schneiderelectric.dces:install-sc-dashboard-ui is properly build
+#</echo>
+                      </tasks>
+                  </configuration>
+              </execution>
+          </executions>
+      </plugin>
+
+
+
+    </plugins>
+  </build>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>sonatype-public-repository</id>
+      <url>https://oss.sonatype.org/content/groups/public</url>
+      <snapshots>
+      </snapshots>
+      <releases>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+</project>

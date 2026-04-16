@@ -1,0 +1,82 @@
+#!/bin/bash
+#
+# chkconfig: 35 90 12
+#
+# Init.d script to start/stop application sc-dashboard-ui, on behalf its applicative account
+#
+# # List of archetype generated parameters
+
+PROJECT_NAME=sc-sip-ui
+BIN_DIR=/app/${PROJECT_NAME}/bin/
+
+# # Get env variable
+. ${BIN_DIR}/setenv
+
+# Get function from functions library
+. /etc/init.d/functions
+
+# Start the applicative service
+start() {
+        echo -n "Starting ${PROJECT_NAME} server: "
+        su ${USER_NAME} -c ${BIN_DIR}/start-application
+        if [[ $? -ne 0 ]]; then
+           failure $"${PROJECT_NAME} server startup"
+        else
+           success $"${PROJECT_NAME} server startup"
+        fi
+        echo
+}
+# Stop the applicative service
+stop() {
+        echo -n "Stopping ${PROJECT_NAME} server: "
+        su ${USER_NAME} -c ${BIN_DIR}/stop-application
+        if [[ $? -ne 0 ]]; then
+           failure $"${PROJECT_NAME} server shutdown"
+        else
+           success $"${PROJECT_NAME} server shutdown"
+        fi
+        echo
+}
+# Check the applicative service
+check() {
+        echo -n "Checking ${PROJECT_NAME} server: "
+        su ${USER_NAME} -c ${BIN_DIR}/check_prerequisite
+        su ${USER_NAME} -c ${BIN_DIR}/check_postinstallation
+        echo
+}
+# Status the applicative service
+status() {
+        echo -n "Status on ${PROJECT_NAME} server: "
+        
+        if [[ "${RC_TOMCAT}" != "" && -x ${RC_TOMCAT} ]]; then
+           ${RC_TOMCAT} status
+        fi
+        if [[ "${RC_NODEJS}" != "" && -x ${RC_NODEJS} ]]; then
+           ${RC_NODEJS} status
+        fi
+        echo
+}
+
+# Main logic
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  check)
+        check
+        ;;
+  status)
+        status
+        ;;
+  restart|reload|condrestart)
+        stop
+        start
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|reload|check|status}"
+        exit 1
+esac
+exit 0

@@ -1,0 +1,66 @@
+#!/bin/sh
+################################################################################
+#
+#         FILE: project_files/bin/check_postinstallation
+#
+#        USAGE: project_files/bin/check_postinstallation {-continue|--continue} {-ignore-checks|--ignore-checks}
+#
+#  DESCRIPTION: This file execute post-installation test prior any action are done on sevrer
+#
+#               This script relies and load local files ./setenv that must contains vars for Project PROJECT_NAME for env ENV.
+#               This script relies on project_files/bin/functions and script/*
+#
+#      OPTIONS: 
+#               -nocontinue           : facultative : stop on error
+#               -ignore-checks        : facultative : don't return with error code when error found
+#
+#        NOTES: 
+#
+#       AUTHOR: Serge Reboul
+#     DIVISION: Building & IT Business (former Partner Business)
+#      COMPANY: Schneider-Electric
+#===============================================================================
+
+export HAS_ERROR=0
+export HAS_WARNING=0
+export NO_COLOR=0
+
+export CONTINUE=-continue
+export IGNORE_CHECKS=
+for var in "$@"
+do
+    if [[ ( "$var" == "-no-color" ) || ( "$var" == "--no-color" ) ]]; then
+      export NO_COLOR="-no-color"
+    fi
+    if [[ ( "$var" == "-nocontinue" ) || ( "$var" == "--nocontinue" ) ]]; then
+      export CONTINUE="-nocontinue"
+    fi
+    if [[ ( "$var" == "-ignore-checks" ) || ( "$var" == "--ignore-checks" ) ]]; then
+      export IGNORE_CHECKS="-ignore-checks"
+    fi
+done  
+
+#-------------------------------------------------------------------------------
+# Load env and functions
+CURRENT_DIR=`pwd`
+BASEDIR=$(dirname ${BASH_SOURCE[0]})
+. ${BASEDIR}/check_functions
+assert_zero $? "Impossible to load ${BASEDIR}/check_functions"
+
+setenv
+assert_zero $? "Impossible to load env variables."
+
+if [ -z "${PROJECT_HOME}" ]; then
+   error "Environment variable (PROJECT_HOME) is not defined. It should be defined within properties files in /conf."
+fi
+
+#-------------------------------------------------------------------------------
+# Common Test applicable for every Installation
+#-------------------------------------------------------------------------------
+# Write test and exit with error code != 0 if check assertion fails
+
+#-------------------------------------------------------------------------------
+# end of Checks
+
+display_check_status
+exit_if_not_zero $?

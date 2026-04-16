@@ -1,0 +1,83 @@
+#!/bin/sh
+################################################################################
+#
+#         FILE: project_files/bin/start-application
+#
+#        USAGE: project_files/bin/start-application {start|restart}
+#               project_files/bin/start-application -h
+#
+#  DESCRIPTION: This file start current application
+#               This script can be called either : 
+#                    - by applicative user %%USER_NAME%% to manually start the application.
+#                    - by root user to startup application when the server start or reboot.
+#
+#               This file usually require adaptation to fullfil its reposability, due to project adaptation.
+#               Per default, the script ensure the following task : 
+#                   - start tomcat server as %%USER_NAME%% if folder & rc exist
+#                   - start nodeJS server as %%USER_NAME%% if folder & rc exist
+#
+#               This script relies and load local files ./setenv that must contains vars for Project PROJECT_NAME for env ENV.
+#               This script relies on project_files/bin/functions and script/*
+#
+#      OPTIONS: n/a
+#
+#        NOTES: 
+#
+#       AUTHOR: Serge Reboul
+#     DIVISION: Building & IT Business (former Partner Business)
+#      COMPANY: Schneider-Electric
+#===============================================================================
+
+if [ "$1" == "-h" -o "$1" == "-help" ]; then
+    echo "Usage : $0 {start|restart}"
+    echo "    start    : start application (default option)"
+    echo "    restart : restart application"
+    exit 1
+fi 
+RC_COMMAND=start
+if [ "$1" == "restart"  ]; then 
+    RC_COMMAND=restart
+fi
+
+#-------------------------------------------------------------------------------
+# Load env and functions
+CURRENT_DIR=`pwd`
+BASEDIR=$(dirname ${BASH_SOURCE[0]})
+. ${BASEDIR}/functions
+assert_zero $? "Impossible to load ${BASEDIR}/functions."
+. ${BASEDIR}/setenv
+assert_zero $? "Impossible to load ${BASEDIR}/setenv."
+
+#-------------------------------------------------------------------------------
+# Check input parameter and env variables
+if [ -z "${PROJECT_NAME}" ]; then
+    error "Environment variable (PROJECT_NAME) is not defined. It should be defined within ${BASEDIR}/setenv."
+fi
+if [ -z "${USER_NAME}" ]; then
+    error "Environment variable (USER_NAME) is not defined. It should be defined within ${BASEDIR}/setenv."
+fi
+
+#-------------------------------------------------------------------------------
+# Start Tomcat application (if folder ${TOMCAT_HOME} exists)
+if [ -d "${TOMCAT_HOME}" ];
+then
+    log ${LOG_PARAM} "== ${RC_COMMAND} Tomcat application"
+    rc_operation ${USER_NAME} ${RC_COMMAND} ${RC_TOMCAT}
+    assert_zero $? "Error while operating ${RC_COMMAND} on Tomcat application."
+fi
+
+#-------------------------------------------------------------------------------
+# Start NodeJS application (if folder ${NODEJS_HOME} exists)
+if [ -d "${NODEJS_HOME}" ];
+then
+    log ${LOG_PARAM} "== ${RC_COMMAND} NodeJS application"
+    rc_operation ${USER_NAME} ${RC_COMMAND} ${RC_NODEJS}
+    assert_zero $? "Error while operating ${RC_COMMAND} NodeJS application."
+fi
+
+#-------------------------------------------------------------------------------
+# add more command here to extend the startup script
+
+log "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+log "+ Startup acheived without detected errors."
+log "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
