@@ -1,582 +1,223 @@
-import React, { useState, useEffect, useMemo } from "react";
-import {
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-} from "recharts";
+import React, { useState } from "react";
 import {
   FiRefreshCw,
-  FiClock,
   FiCheckCircle,
   FiXCircle,
   FiAlertTriangle,
-  FiPauseCircle,
-  FiPlayCircle,
-  FiCalendar,
-  FiActivity,
+  FiClock,
+  FiHash,
+  FiPlay,
+  FiStopCircle,
+  FiCode,
   FiZap,
 } from "react-icons/fi";
 
+/* ─── Constants ──────────────────────────────────────────── */
+const JOB_NAMES = [
+  "PimSync",
+  "JOB_RRL_SYNC",
+  "JOB_TAB_SPEC",
+  "JOB_SELECTOR_SYNC",
+  "IndexerJob",
+  "JOB_PRODUCT_SYNC",
+  "JOB_AR_SYNC",
+  "JOB_GPF_SYNC",
+] as const;
+
+const BASE_URL = "http://localhost:5051/sc-telemetry-services/job-status/latest";
+
 /* ─── Types ──────────────────────────────────────────────── */
-export type JobStatus = "UP" | "DOWN" | "DEGRADED" | "PAUSED" | "RUNNING" | "SCHEDULED";
-export type JobEnv = "dev" | "staging" | "prod";
-
-export interface Job {
-  id: string;
-  name: string;
-  description: string;
-  status: JobStatus;
-  environment: JobEnv;
-  schedule: string;
-  lastRunAt: string;
-  nextRunAt: string;
-  lastUpAt: string;
-  lastDownAt: string | null;
-  lastDownReason: string | null;
-  avgDurationMs: number;
-  successRate: number;
-  totalRuns: number;
-  retries: number;
-  owner: string;
+interface JobStatusResponse {
+  jobName: string;
+  jobInstanceId: number;
+  jobExecutionId: number;
+  status: string;
+  startTime: string;
+  endTime: string;
+  exitCode: string;
+  errorMessage: string;
 }
 
-/* ─── Dummy data ─────────────────────────────────────────── */
-const DUMMY_JOBS: Job[] = [
-  {
-    id: "job-001",
-    name: "Data Sync Worker",
-    description: "Syncs platform data from upstream sources every 5 minutes",
-    status: "UP",
-    environment: "dev",
-    schedule: "*/5 * * * *",
-    lastRunAt: "2026-04-16T10:45:00Z",
-    nextRunAt: "2026-04-16T10:50:00Z",
-    lastUpAt: "2026-04-16T10:45:00Z",
-    lastDownAt: null,
-    lastDownReason: null,
-    avgDurationMs: 3200,
-    successRate: 98.7,
-    totalRuns: 4320,
-    retries: 0,
-    owner: "platform-team",
-  },
-  {
-    id: "job-002",
-    name: "Cache Invalidation",
-    description: "Clears stale cache entries across all nodes",
-    status: "DOWN",
-    environment: "dev",
-    schedule: "0 * * * *",
-    lastRunAt: "2026-04-16T09:00:00Z",
-    nextRunAt: "2026-04-16T10:00:00Z",
-    lastUpAt: "2026-04-16T08:00:00Z",
-    lastDownAt: "2026-04-16T09:00:00Z",
-    lastDownReason: "Redis connection timeout",
-    avgDurationMs: 800,
-    successRate: 72.3,
-    totalRuns: 720,
-    retries: 3,
-    owner: "infra-team",
-  },
-  {
-    id: "job-003",
-    name: "Report Generator",
-    description: "Generates daily analytics reports and pushes to S3",
-    status: "SCHEDULED",
-    environment: "dev",
-    schedule: "0 2 * * *",
-    lastRunAt: "2026-04-15T02:00:00Z",
-    nextRunAt: "2026-04-16T02:00:00Z",
-    lastUpAt: "2026-04-15T02:00:00Z",
-    lastDownAt: null,
-    lastDownReason: null,
-    avgDurationMs: 45000,
-    successRate: 100,
-    totalRuns: 180,
-    retries: 0,
-    owner: "analytics-team",
-  },
-  {
-    id: "job-004",
-    name: "Notification Dispatcher",
-    description: "Dispatches queued push notifications in bulk",
-    status: "DEGRADED",
-    environment: "dev",
-    schedule: "*/2 * * * *",
-    lastRunAt: "2026-04-16T10:43:00Z",
-    nextRunAt: "2026-04-16T10:45:00Z",
-    lastUpAt: "2026-04-16T10:41:00Z",
-    lastDownAt: "2026-04-16T10:43:00Z",
-    lastDownReason: "High latency > 2s threshold",
-    avgDurationMs: 2100,
-    successRate: 85.4,
-    totalRuns: 10800,
-    retries: 2,
-    owner: "notifications-team",
-  },
-  {
-    id: "job-005",
-    name: "DB Backup",
-    description: "Creates incremental snapshots of primary databases",
-    status: "PAUSED",
-    environment: "dev",
-    schedule: "0 3 * * *",
-    lastRunAt: "2026-04-14T03:00:00Z",
-    nextRunAt: "—",
-    lastUpAt: "2026-04-14T03:00:00Z",
-    lastDownAt: null,
-    lastDownReason: null,
-    avgDurationMs: 120000,
-    successRate: 99.1,
-    totalRuns: 90,
-    retries: 0,
-    owner: "dba-team",
-  },
-  {
-    id: "job-006",
-    name: "Health Probe",
-    description: "Pings all registered services and updates health matrix",
-    status: "RUNNING",
-    environment: "dev",
-    schedule: "* * * * *",
-    lastRunAt: "2026-04-16T10:46:00Z",
-    nextRunAt: "2026-04-16T10:47:00Z",
-    lastUpAt: "2026-04-16T10:46:00Z",
-    lastDownAt: null,
-    lastDownReason: null,
-    avgDurationMs: 420,
-    successRate: 99.9,
-    totalRuns: 50000,
-    retries: 0,
-    owner: "platform-team",
-  },
-  {
-    id: "job-007",
-    name: "Event Aggregator",
-    description: "Aggregates raw events into hourly buckets for analytics",
-    status: "UP",
-    environment: "staging",
-    schedule: "0 * * * *",
-    lastRunAt: "2026-04-16T10:00:00Z",
-    nextRunAt: "2026-04-16T11:00:00Z",
-    lastUpAt: "2026-04-16T10:00:00Z",
-    lastDownAt: null,
-    lastDownReason: null,
-    avgDurationMs: 8500,
-    successRate: 97.8,
-    totalRuns: 2160,
-    retries: 1,
-    owner: "analytics-team",
-  },
-  {
-    id: "job-008",
-    name: "Token Cleanup",
-    description: "Removes expired auth tokens from cache and DB",
-    status: "DOWN",
-    environment: "staging",
-    schedule: "*/30 * * * *",
-    lastRunAt: "2026-04-16T10:30:00Z",
-    nextRunAt: "2026-04-16T11:00:00Z",
-    lastUpAt: "2026-04-16T10:00:00Z",
-    lastDownAt: "2026-04-16T10:30:00Z",
-    lastDownReason: "DB connection refused",
-    avgDurationMs: 1200,
-    successRate: 68.1,
-    totalRuns: 4320,
-    retries: 3,
-    owner: "auth-team",
-  },
-  {
-    id: "job-009",
-    name: "Metrics Pusher",
-    description: "Pushes collected metrics to monitoring stack",
-    status: "UP",
-    environment: "prod",
-    schedule: "*/1 * * * *",
-    lastRunAt: "2026-04-16T10:46:00Z",
-    nextRunAt: "2026-04-16T10:47:00Z",
-    lastUpAt: "2026-04-16T10:46:00Z",
-    lastDownAt: null,
-    lastDownReason: null,
-    avgDurationMs: 500,
-    successRate: 99.95,
-    totalRuns: 100000,
-    retries: 0,
-    owner: "observability-team",
-  },
-  {
-    id: "job-010",
-    name: "Index Rebuilder",
-    description: "Rebuilds Elasticsearch indices for search performance",
-    status: "DEGRADED",
-    environment: "prod",
-    schedule: "0 1 * * 0",
-    lastRunAt: "2026-04-13T01:00:00Z",
-    nextRunAt: "2026-04-20T01:00:00Z",
-    lastUpAt: "2026-04-13T01:00:00Z",
-    lastDownAt: "2026-04-13T01:35:00Z",
-    lastDownReason: "Memory pressure — took 10x longer than avg",
-    avgDurationMs: 600000,
-    successRate: 83.3,
-    totalRuns: 12,
-    retries: 1,
-    owner: "search-team",
-  },
-];
+type FetchState = "idle" | "loading" | "success" | "error";
 
-/* ─── Fake API call ──────────────────────────────────────── */
-type FetchState = "loading" | "success" | "error" | "empty";
-
-function useFetchJobs(env: JobEnv, statusFilter: string, module: string) {
-  const [state, setState] = useState<FetchState>("loading");
-  const [jobs, setJobs] = useState<Job[]>([]);
-
-  useEffect(() => {
-    setState("loading");
-    setJobs([]);
-
-    const timer = setTimeout(() => {
-      // Simulate occasional API failure
-      if (Math.random() < 0.05) {
-        setState("error");
-        return;
-      }
-
-      const filtered = DUMMY_JOBS.filter(
-        (j) =>
-          j.environment === env &&
-          (statusFilter === "ALL" || j.status === statusFilter)
-      );
-
-      if (filtered.length === 0) {
-        setState("empty");
-      } else {
-        setJobs(filtered);
-        setState("success");
-      }
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, [env, statusFilter, module]);
-
-  return { state, jobs, refetch: () => setState("loading") };
-}
-
-/* ─── Helpers ────────────────────────────────────────────── */
-const STATUS_CONFIG: Record<
-  JobStatus,
-  { label: string; color: string; bg: string; border: string; Icon: React.ElementType }
-> = {
-  UP: {
-    label: "UP",
-    color: "#16a34a",
-    bg: "#f0fdf4",
-    border: "#16a34a",
-    Icon: FiCheckCircle,
-  },
-  DOWN: {
-    label: "DOWN",
-    color: "#dc2626",
-    bg: "#fff5f5",
-    border: "#dc2626",
-    Icon: FiXCircle,
-  },
-  DEGRADED: {
-    label: "DEGRADED",
-    color: "#d97706",
-    bg: "#fffbeb",
-    border: "#d97706",
-    Icon: FiAlertTriangle,
-  },
-  PAUSED: {
-    label: "PAUSED",
-    color: "#64748b",
-    bg: "#f8fafc",
-    border: "#94a3b8",
-    Icon: FiPauseCircle,
-  },
-  RUNNING: {
-    label: "RUNNING",
-    color: "#3b82f6",
-    bg: "#eff6ff",
-    border: "#3b82f6",
-    Icon: FiPlayCircle,
-  },
-  SCHEDULED: {
-    label: "SCHEDULED",
-    color: "#7c3aed",
-    bg: "#f5f3ff",
-    border: "#7c3aed",
-    Icon: FiCalendar,
-  },
+/* ─── Mock fallback data ─────────────────────────────────── */
+const MOCK_RESULT: JobStatusResponse = {
+  jobName: "JOB_SELECTOR_SYNC",
+  jobInstanceId: 373,
+  jobExecutionId: 437,
+  status: "COMPLETED",
+  startTime: "2026-04-16T01:04:31.253317",
+  endTime: "2026-04-16T01:21:50.170411",
+  exitCode: "COMPLETED",
+  errorMessage: "",
 };
 
-function formatDuration(ms: number): string {
-  if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-  if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`;
-  return `${(ms / 3600000).toFixed(1)}h`;
+/* ─── Helpers ────────────────────────────────────────────── */
+function formatDateTime(iso: string): string {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
 }
 
-function formatRelative(iso: string | null): string {
-  if (!iso || iso === "—") return "—";
-  const diff = Date.now() - new Date(iso).getTime();
-  if (diff < 60_000) return "just now";
-  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
-  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
-  return `${Math.floor(diff / 86_400_000)}d ago`;
+function calcDuration(start: string, end: string): string {
+  if (!start || !end) return "—";
+  try {
+    const ms = new Date(end).getTime() - new Date(start).getTime();
+    if (ms < 0) return "—";
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const h = Math.floor(m / 60);
+    if (h > 0) return `${h}h ${m % 60}m ${s % 60}s`;
+    if (m > 0) return `${m}m ${s % 60}s`;
+    return `${s}s`;
+  } catch {
+    return "—";
+  }
+}
+
+function getStatusMeta(status: string): {
+  color: string;
+  bg: string;
+  border: string;
+  Icon: React.ElementType;
+} {
+  const s = status?.toUpperCase();
+  if (s === "COMPLETED" || s === "UP")
+    return { color: "#16a34a", bg: "#f0fdf4", border: "#bbf7d0", Icon: FiCheckCircle };
+  if (s === "FAILED" || s === "DOWN")
+    return { color: "#dc2626", bg: "#fff5f5", border: "#fecaca", Icon: FiXCircle };
+  if (s === "RUNNING" || s === "STARTED")
+    return { color: "#3b82f6", bg: "#eff6ff", border: "#bfdbfe", Icon: FiPlay };
+  if (s === "STOPPED" || s === "STOPPING")
+    return { color: "#64748b", bg: "#f8fafc", border: "#e2e8f0", Icon: FiStopCircle };
+  return { color: "#d97706", bg: "#fffbeb", border: "#fde68a", Icon: FiAlertTriangle };
 }
 
 /* ─── Skeleton ───────────────────────────────────────────── */
-const JobCardSkeleton: React.FC = () => (
-  <div className="job-card job-card-skeleton">
-    <div className="skeleton-line skeleton-title" />
-    <div className="skeleton-line skeleton-sub" />
-    <div className="job-card-meta-row">
-      <div className="skeleton-line skeleton-badge" />
-      <div className="skeleton-line skeleton-badge" />
+const ResultSkeleton: React.FC = () => (
+  <div className="job-result-card job-result-skeleton">
+    <div className="job-result-skeleton-header">
+      <div className="skeleton-line" style={{ width: "45%", height: 22 }} />
+      <div className="skeleton-line" style={{ width: 90, height: 28, borderRadius: 20 }} />
     </div>
-    <div className="job-card-stats">
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="job-stat">
-          <div className="skeleton-line skeleton-stat-label" />
-          <div className="skeleton-line skeleton-stat-val" />
+    <div className="job-result-stats-grid">
+      {[1, 2, 3, 4, 5, 6].map((i) => (
+        <div key={i} className="job-result-stat">
+          <div className="skeleton-line" style={{ width: "60%", height: 11, marginBottom: 6 }} />
+          <div className="skeleton-line" style={{ width: "80%", height: 15 }} />
         </div>
       ))}
     </div>
   </div>
 );
 
-/* ─── Job Card ───────────────────────────────────────────── */
-const JobCard: React.FC<{ job: Job }> = ({ job }) => {
-  const cfg = STATUS_CONFIG[job.status];
-  const { Icon } = cfg;
+/* ─── Result Card ────────────────────────────────────────── */
+const JobResultCard: React.FC<{ data: JobStatusResponse }> = ({ data }) => {
+  const statusMeta = getStatusMeta(data.status);
+  const { Icon } = statusMeta;
+  const duration = calcDuration(data.startTime, data.endTime);
+  const exitMeta = getStatusMeta(data.exitCode);
+  const ExitIcon = exitMeta.Icon;
 
   return (
     <div
-      className="job-card"
-      style={{
-        borderTopColor: cfg.border,
-        background: `linear-gradient(160deg, #ffffff 0%, ${cfg.bg} 100%)`,
-      }}
+      className="job-result-card"
+      style={{ borderTopColor: statusMeta.border }}
     >
       {/* Header */}
-      <div className="job-card-header">
-        <div className="job-card-title-wrap">
-          <span className="job-card-name">{job.name}</span>
+      <div className="job-result-header">
+        <div className="job-result-title-row">
+          <span className="job-result-name">{data.jobName}</span>
           <span
-            className="job-status-badge"
-            style={{ color: cfg.color, background: cfg.bg, borderColor: cfg.border }}
-          >
-            <Icon size={11} />
-            {cfg.label}
-          </span>
-        </div>
-        <p className="job-card-desc">{job.description}</p>
-      </div>
-
-      {/* Meta row */}
-      <div className="job-card-meta-row">
-        <span className="job-meta-tag">
-          <FiZap size={10} />
-          {job.schedule}
-        </span>
-        <span className="job-meta-tag job-meta-owner">
-          <FiActivity size={10} />
-          {job.owner}
-        </span>
-      </div>
-
-      {/* Stats */}
-      <div className="job-card-stats">
-        <div className="job-stat">
-          <span className="job-stat-label">
-            <FiClock size={11} /> Last Run
-          </span>
-          <span className="job-stat-val">{formatRelative(job.lastRunAt)}</span>
-        </div>
-        <div className="job-stat">
-          <span className="job-stat-label">
-            <FiCheckCircle size={11} /> Last Up
-          </span>
-          <span className="job-stat-val text-up">{formatRelative(job.lastUpAt)}</span>
-        </div>
-        <div className="job-stat">
-          <span className="job-stat-label">
-            <FiXCircle size={11} /> Last Down
-          </span>
-          <span
-            className="job-stat-val"
-            style={{ color: job.lastDownAt ? "#dc2626" : "#64748b" }}
-          >
-            {job.lastDownAt ? formatRelative(job.lastDownAt) : "Never"}
-          </span>
-        </div>
-        <div className="job-stat">
-          <span className="job-stat-label">
-            <FiCalendar size={11} /> Next Run
-          </span>
-          <span className="job-stat-val">{formatRelative(job.nextRunAt)}</span>
-        </div>
-        <div className="job-stat">
-          <span className="job-stat-label">Avg Duration</span>
-          <span className="job-stat-val">{formatDuration(job.avgDurationMs)}</span>
-        </div>
-        <div className="job-stat">
-          <span className="job-stat-label">Success Rate</span>
-          <span
-            className="job-stat-val"
+            className="job-result-status-badge"
             style={{
-              color:
-                job.successRate >= 95
-                  ? "#16a34a"
-                  : job.successRate >= 80
-                  ? "#d97706"
-                  : "#dc2626",
+              color: statusMeta.color,
+              background: statusMeta.bg,
+              borderColor: statusMeta.border,
             }}
           >
-            {job.successRate.toFixed(1)}%
-          </span>
-        </div>
-        <div className="job-stat">
-          <span className="job-stat-label">Total Runs</span>
-          <span className="job-stat-val">{job.totalRuns.toLocaleString()}</span>
-        </div>
-        <div className="job-stat">
-          <span className="job-stat-label">Retries</span>
-          <span
-            className="job-stat-val"
-            style={{ color: job.retries > 0 ? "#d97706" : "#64748b" }}
-          >
-            {job.retries}
+            <Icon size={13} />
+            {data.status}
           </span>
         </div>
       </div>
 
-      {/* Down reason */}
-      {job.lastDownReason && (
-        <div className="job-down-reason">
-          <FiAlertTriangle size={11} />
-          {job.lastDownReason}
+      {/* Stats grid */}
+      <div className="job-result-stats-grid">
+        <div className="job-result-stat">
+          <span className="job-result-stat-label">
+            <FiHash size={11} /> Job Instance ID
+          </span>
+          <span className="job-result-stat-val">{data.jobInstanceId ?? "—"}</span>
+        </div>
+
+        <div className="job-result-stat">
+          <span className="job-result-stat-label">
+            <FiZap size={11} /> Job Execution ID
+          </span>
+          <span className="job-result-stat-val">{data.jobExecutionId ?? "—"}</span>
+        </div>
+
+        <div className="job-result-stat">
+          <span className="job-result-stat-label">
+            <FiPlay size={11} /> Start Time
+          </span>
+          <span className="job-result-stat-val">{formatDateTime(data.startTime)}</span>
+        </div>
+
+        <div className="job-result-stat">
+          <span className="job-result-stat-label">
+            <FiStopCircle size={11} /> End Time
+          </span>
+          <span className="job-result-stat-val">{formatDateTime(data.endTime)}</span>
+        </div>
+
+        <div className="job-result-stat">
+          <span className="job-result-stat-label">
+            <FiClock size={11} /> Duration
+          </span>
+          <span className="job-result-stat-val job-result-stat-mono">{duration}</span>
+        </div>
+
+        <div className="job-result-stat">
+          <span className="job-result-stat-label">
+            <FiCode size={11} /> Exit Code
+          </span>
+          <span
+            className="job-result-stat-val"
+            style={{ color: exitMeta.color, fontWeight: 700 }}
+          >
+            <ExitIcon size={12} style={{ marginRight: 4, verticalAlign: "middle" }} />
+            {data.exitCode || "—"}
+          </span>
+        </div>
+      </div>
+
+      {/* Error message — only show when non-empty */}
+      {data.errorMessage && (
+        <div className="job-result-error-row">
+          <FiAlertTriangle size={13} />
+          <span>{data.errorMessage}</span>
         </div>
       )}
-    </div>
-  );
-};
 
-/* ─── Pie Chart ──────────────────────────────────────────── */
-const JobsPieChart: React.FC<{ jobs: Job[] }> = ({ jobs }) => {
-  const byStatus = useMemo(() => {
-    const counts: Partial<Record<JobStatus, number>> = {};
-    for (const j of jobs) {
-      counts[j.status] = (counts[j.status] ?? 0) + 1;
-    }
-    return Object.entries(counts).map(([status, value]) => ({
-      name: status as JobStatus,
-      value: value as number,
-      fill: STATUS_CONFIG[status as JobStatus].color,
-    }));
-  }, [jobs]);
-
-  const byEnv = useMemo(() => {
-    const envColors: Record<JobEnv, string> = {
-      dev: "#3b82f6",
-      staging: "#f59e0b",
-      prod: "#10b981",
-    };
-    const counts: Partial<Record<JobEnv, number>> = {};
-    for (const j of jobs) {
-      counts[j.environment] = (counts[j.environment] ?? 0) + 1;
-    }
-    return Object.entries(counts).map(([env, value]) => ({
-      name: env as JobEnv,
-      value: value as number,
-      fill: envColors[env as JobEnv],
-    }));
-  }, [jobs]);
-
-  return (
-    <div className="jobs-charts-row">
-      {/* Status distribution */}
-      <div className="jobs-chart-card">
-        <h4 className="jobs-chart-title">
-          <FiActivity size={14} />
-          Status Distribution
-        </h4>
-        <ResponsiveContainer width="100%" height={170}>
-          <PieChart>
-            <Pie
-              data={byStatus}
-              cx="50%"
-              cy="50%"
-              innerRadius={42}
-              outerRadius={68}
-              dataKey="value"
-              strokeWidth={2}
-              stroke="#fff"
-            >
-              {byStatus.map((entry, i) => (
-                <Cell key={i} fill={entry.fill} />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value, name) => [value, name]}
-              contentStyle={{ borderRadius: 8, fontSize: 12 }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-        <div className="jobs-chart-legend">
-          {byStatus.map((d, i) => (
-            <div key={i} className="dep-legend-item">
-              <span className="dep-legend-dot" style={{ background: d.fill }} />
-              <span className="dep-legend-name">{d.name}</span>
-              <span className="dep-legend-count">{d.value}</span>
-            </div>
-          ))}
+      {/* All clear row */}
+      {!data.errorMessage && (
+        <div className="job-result-ok-row">
+          <FiCheckCircle size={13} />
+          No errors reported
         </div>
-      </div>
-
-      {/* Env distribution */}
-      <div className="jobs-chart-card">
-        <h4 className="jobs-chart-title">
-          <FiZap size={14} />
-          Environment Split
-        </h4>
-        <ResponsiveContainer width="100%" height={170}>
-          <PieChart>
-            <Pie
-              data={byEnv}
-              cx="50%"
-              cy="50%"
-              innerRadius={42}
-              outerRadius={68}
-              dataKey="value"
-              strokeWidth={2}
-              stroke="#fff"
-            >
-              {byEnv.map((entry, i) => (
-                <Cell key={i} fill={entry.fill} />
-              ))}
-            </Pie>
-            <Tooltip
-              formatter={(value, name) => [value, name]}
-              contentStyle={{ borderRadius: 8, fontSize: 12 }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-        <div className="jobs-chart-legend">
-          {byEnv.map((d, i) => (
-            <div key={i} className="dep-legend-item">
-              <span className="dep-legend-dot" style={{ background: d.fill }} />
-              <span className="dep-legend-name">{d.name}</span>
-              <span className="dep-legend-count">{d.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -586,124 +227,124 @@ interface JobsTabProps {
   selectedModule: string;
 }
 
-export const JobsTab: React.FC<JobsTabProps> = ({ selectedModule }) => {
-  const [env, setEnv] = useState<JobEnv>("dev");
-  const [statusFilter, setStatusFilter] = useState<string>("UP");
-  const { state, jobs, refetch } = useFetchJobs(env, statusFilter, selectedModule);
+export const JobsTab: React.FC<JobsTabProps> = () => {
+  const [selectedJob, setSelectedJob] = useState<string>(JOB_NAMES[0]);
+  const [fetchState, setFetchState] = useState<FetchState>("idle");
+  const [result, setResult] = useState<JobStatusResponse | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string>("");
+  const [isMock, setIsMock] = useState<boolean>(false);
 
-  const allJobsForCharts = useMemo(
-    () => DUMMY_JOBS.filter((j) => j.environment === env),
-    [env]
-  );
+  const handleCheckStatus = async () => {
+    setFetchState("loading");
+    setResult(null);
+    setErrorMsg("");
+    setIsMock(false);
+
+    try {
+      const res = await fetch(`${BASE_URL}/${selectedJob}`);
+      if (!res.ok) {
+        throw new Error(`Server responded with ${res.status} ${res.statusText}`);
+      }
+      const json: JobStatusResponse = await res.json();
+      setResult(json);
+      setFetchState("success");
+    } catch (err: unknown) {
+      // API unavailable — fall back to mock data so the UI is still useful
+      setErrorMsg(err instanceof Error ? err.message : "Unexpected error");
+      setResult({ ...MOCK_RESULT, jobName: selectedJob });
+      setIsMock(true);
+      setFetchState("success");
+    }
+  };
 
   return (
     <div className="jobs-tab-root">
       {/* ── Controls bar ── */}
       <div className="jobs-controls-bar">
         <div className="jobs-controls-left">
+          {/* Job Name dropdown */}
           <div className="jobs-select-wrap">
-            <label className="jobs-select-label">Environment</label>
+            <label className="jobs-select-label">Job Name</label>
             <select
-              className="jobs-select"
-              value={env}
-              onChange={(e) => setEnv(e.target.value as JobEnv)}
+              className="jobs-select jobs-select-wide"
+              value={selectedJob}
+              onChange={(e) => {
+                setSelectedJob(e.target.value);
+                setFetchState("idle");
+                setResult(null);
+              }}
             >
-              <option value="dev">Dev</option>
-              <option value="staging">Staging</option>
-              <option value="prod">Prod</option>
-            </select>
-          </div>
-
-          <div className="jobs-select-wrap">
-            <label className="jobs-select-label">Status</label>
-            <select
-              className="jobs-select"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="ALL">All</option>
-              <option value="UP">UP</option>
-              <option value="DOWN">DOWN</option>
-              <option value="DEGRADED">DEGRADED</option>
-              <option value="PAUSED">PAUSED</option>
-              <option value="RUNNING">RUNNING</option>
-              <option value="SCHEDULED">SCHEDULED</option>
+              {JOB_NAMES.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
             </select>
           </div>
         </div>
 
         <div className="jobs-controls-right">
-          {state === "success" && (
-            <span className="jobs-count-badge">
-              {jobs.length} job{jobs.length !== 1 ? "s" : ""}
-            </span>
-          )}
           <button
-            className="jobs-refresh-btn"
-            onClick={refetch}
-            disabled={state === "loading"}
-            title="Refresh"
+            className="jobs-check-btn"
+            onClick={handleCheckStatus}
+            disabled={fetchState === "loading"}
           >
             <FiRefreshCw
               size={14}
               style={{
-                animation: state === "loading" ? "spin 1s linear infinite" : "none",
+                animation:
+                  fetchState === "loading" ? "spin 0.9s linear infinite" : "none",
               }}
             />
-            Refresh
+            {fetchState === "loading" ? "Checking…" : "Check Latest Status"}
           </button>
         </div>
       </div>
 
-      {/* ── Scrollable body: charts + cards / fallback states ── */}
+      {/* ── Scrollable body ── */}
       <div className="jobs-scroll-body">
-        {/* Charts (always shown when data is available) */}
-        {state === "success" && allJobsForCharts.length > 0 && (
-          <JobsPieChart jobs={allJobsForCharts} />
-        )}
-
-        {/* Loading skeletons */}
-        {state === "loading" && (
-          <div className="jobs-grid">
-            {[1, 2, 3, 4].map((i) => (
-              <JobCardSkeleton key={i} />
-            ))}
-          </div>
-        )}
-
-        {/* Job cards */}
-        {state === "success" && (
-          <div className="jobs-grid">
-            {jobs.map((job) => (
-              <JobCard key={job.id} job={job} />
-            ))}
-          </div>
-        )}
-
-        {/* Empty state */}
-        {state === "empty" && (
+        {/* Idle — prompt */}
+        {fetchState === "idle" && (
           <div className="jobs-fallback">
-            <FiRefreshCw size={38} className="jobs-fallback-icon" />
-            <h3>No jobs found</h3>
+            <div className="tab-empty-icon"><FiZap size={36} /></div>
+            <h3>Select a job and check its latest status</h3>
             <p>
-              No <strong>{statusFilter === "ALL" ? "" : statusFilter}</strong> jobs in{" "}
-              <strong>{env}</strong> for <strong>{selectedModule}</strong>.
+              Choose a job from the dropdown above and click{" "}
+              <strong>Check Latest Status</strong> to fetch the most recent
+              execution details.
             </p>
-            <button className="jobs-refresh-btn" onClick={refetch}>
-              <FiRefreshCw size={13} /> Retry
-            </button>
           </div>
         )}
 
-        {/* Error state */}
-        {state === "error" && (
-          <div className="jobs-fallback jobs-fallback-error">
-            <FiXCircle size={38} className="jobs-fallback-icon-error" />
-            <h3>Failed to load jobs</h3>
-            <p>Something went wrong while fetching jobs. Please try again.</p>
-            <button className="jobs-refresh-btn jobs-refresh-btn-danger" onClick={refetch}>
-              <FiRefreshCw size={13} /> Retry
-            </button>
+        {/* Loading skeleton */}
+        {fetchState === "loading" && <ResultSkeleton />}
+
+        {/* Success (live or mock fallback) */}
+        {fetchState === "success" && result && (
+          <div className="job-result-wrap">
+            {/* Mock data warning banner */}
+            {isMock && (
+              <div className="job-mock-banner">
+                <FiAlertTriangle size={15} />
+                <div className="job-mock-banner-text">
+                  <strong>API unreachable</strong> — showing sample data.
+                  <span className="job-mock-banner-reason">{errorMsg}</span>
+                </div>
+                <button className="job-mock-retry-btn" onClick={handleCheckStatus}>
+                  <FiRefreshCw size={12} /> Retry
+                </button>
+              </div>
+            )}
+
+            <JobResultCard data={result} />
+
+            {/* Raw JSON toggle */}
+            <details className="job-raw-json">
+              <summary>
+                <FiCode size={12} /> View raw response
+              </summary>
+              <pre>{JSON.stringify(result, null, 2)}</pre>
+            </details>
           </div>
         )}
       </div>

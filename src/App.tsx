@@ -204,6 +204,20 @@ export const App = () => {
       : "#D1D5DB",
   } as CSSProperties;
 
+  const environmentSelector = (
+    <div className="header-env-wrap">
+      <label className="header-env-label">Environment</label>
+      <select className="header-env-select" defaultValue="DEV">
+        <option value="DEV">DEV</option>
+        <option value="SQE">SQE</option>
+        <option value="PROD-DATA">PROD-DATA</option>
+        <option value="PROD-PPR">PROD-PPR</option>
+        <option value="PROD-EMEA">PROD-EMEA</option>
+        <option value="PROD-CHINA">PROD-CHINA</option>
+      </select>
+    </div>
+  );
+
   const notificationSlot = (
     <div className="notif-wrapper" ref={notifWrapperRef}>
       <button
@@ -233,7 +247,7 @@ export const App = () => {
 
   return (
     <div>
-      <Header rightSlot={notificationSlot} />
+      <Header rightSlot={<>{environmentSelector}{notificationSlot}</>} />
 
       <main className="app-shell" style={chartStyles}>
         {/* Top bar — back button only */}

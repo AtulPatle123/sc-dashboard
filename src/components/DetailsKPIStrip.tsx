@@ -1,13 +1,7 @@
 import React, { useState } from "react";
 import type { PlatformHealth } from "../models/dashboard";
 import { JobsTab } from "./JobsTab";
-import {
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-} from "recharts";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 import {
   SiRedis,
   SiMongodb,
@@ -112,7 +106,7 @@ export const DetailsKPIStrip: React.FC<DetailsKPIStripProps> = ({
       (m) =>
         m.name === `sc-${selectedModule}` ||
         m.name === selectedModule ||
-        m.name.endsWith(selectedModule)
+        m.name.endsWith(selectedModule),
     ) ?? selected?.modulesResponse[0];
 
   const deps = moduleInfo?.dependencies ?? [];
@@ -135,8 +129,8 @@ export const DetailsKPIStrip: React.FC<DetailsKPIStripProps> = ({
     moduleInfo?.status === "UP"
       ? "↑"
       : moduleInfo?.status === "DOWN"
-      ? "↓"
-      : "⚠";
+        ? "↓"
+        : "⚠";
 
   const statusClass = (moduleInfo?.status ?? "unknown").toLowerCase();
 
@@ -147,9 +141,7 @@ export const DetailsKPIStrip: React.FC<DetailsKPIStripProps> = ({
         {(["health", "telemetry", "logs", "jobs"] as Tab[]).map((tab) => (
           <button
             key={tab}
-            className={`details-tab-btn ${
-              activeTab === tab ? "active" : ""
-            }`}
+            className={`details-tab-btn ${activeTab === tab ? "active" : ""}`}
             onClick={() => setActiveTab(tab)}
           >
             <span className="tab-icon">{TAB_CONFIG[tab].icon}</span>
@@ -165,9 +157,7 @@ export const DetailsKPIStrip: React.FC<DetailsKPIStripProps> = ({
           <div className="module-info-strip">
             <div className="module-info-cell">
               <span className="info-cell-label">MODULE</span>
-              <span className="info-cell-value">
-                {selectedModule || "—"}
-              </span>
+              <span className="info-cell-value">{selectedModule || "—"}</span>
             </div>
 
             <div className="module-info-cell">
@@ -369,7 +359,7 @@ export const DetailsKPIStrip: React.FC<DetailsKPIStripProps> = ({
       {activeTab === "telemetry" && (
         <div className="tab-empty-state">
           <div className="tab-empty-icon">
-            <FaChartLine size={40} color="var(--color-primary)" />
+            <FaChartLine size={40} />
           </div>
           <h3>Telemetry</h3>
           <p>
@@ -392,7 +382,7 @@ export const DetailsKPIStrip: React.FC<DetailsKPIStripProps> = ({
       {/* Logs */}
       {activeTab === "logs" && (
         <div className="tab-empty-state">
-          <FaFileLines size={40} />
+          <div className="tab-empty-icon"><FaFileLines size={40} /></div>
           <h3>Logs</h3>
           <p>
             Access log files for <strong>{selectedModule}</strong>.
@@ -410,9 +400,7 @@ export const DetailsKPIStrip: React.FC<DetailsKPIStripProps> = ({
         </div>
       )}
 
-      {activeTab === "jobs" && (
-        <JobsTab selectedModule={selectedModule} />
-      )}
+      {activeTab === "jobs" && <JobsTab selectedModule={selectedModule} />}
     </div>
   );
 };
